@@ -1,6 +1,7 @@
 import { app } from 'electron'
 import blocks from './block'
 
+let mainWindow
 /**
  * Set `__static` path to static files in production
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-static-assets.html
@@ -12,7 +13,7 @@ if (process.env.NODE_ENV !== 'development') {
 if (process.argv.indexOf('--dev') >= 0) require('electron-debug')({ showDevTools: true })
 
 function create () {
-  blocks.create(app)
+  mainWindow = blocks.create(app)
 }
 
 app.on('ready', create)

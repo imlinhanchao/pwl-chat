@@ -3,9 +3,10 @@ import tray from './tray'
 import events from './event'
 
 let create = (app) => {
-    windows.create(app)
+    let win = windows.create(app)
     tray.create(app, windows)
     events.create(app, windows)
+    return win;
 }
 
 export default {

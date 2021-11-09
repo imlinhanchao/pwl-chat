@@ -14,7 +14,7 @@ let create = (app) => {
     })
 
     //windows.main.window.maximize()
-    return windows.main;
+    return windows.main.windows;
 }
 
 let show = () => {

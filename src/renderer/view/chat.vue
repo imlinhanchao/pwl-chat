@@ -189,6 +189,7 @@
                     return;
                 }
                 console.log(rsp);
+                this.message = '';
             },
             messageWs(e) {
                 console.log("onmessage");
