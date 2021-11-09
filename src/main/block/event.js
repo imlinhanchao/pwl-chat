@@ -14,7 +14,7 @@ let create = (app, win) => {
     })
 
     ipcMain.on('win-min', (event, arg) => {
-        win.windows.main.window.minimize()
+        win.hide()
     })
 
     ipcMain.on('pwl-token', (event, arg) => {

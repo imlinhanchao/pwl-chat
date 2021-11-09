@@ -3,6 +3,7 @@ import {
     Tray
 } from 'electron'
 import path from 'path'
+import info from '../../../package.json'
 
 var tray
 let create = (app, win) => {
@@ -23,8 +24,11 @@ let create = (app, win) => {
             }
         }
     ])
-    tray.setToolTip('GPIO Translation Tool')
+    tray.setToolTip(info.description)
     tray.setContextMenu(contextMenu)
+    tray.on('double-click',()=>{       
+        win.show();
+    })
 }
 
 export default { create }

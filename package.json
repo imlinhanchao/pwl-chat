@@ -2,7 +2,7 @@
   "name": "pwl-app",
   "version": "1.0.0",
   "author": "Hancel.Lin",
-  "description": "PWL MoFish App",
+  "description": "摸鱼派聊天室",
   "license": "MIT",
   "main": "./dist/electron/main.js",
   "scripts": {
