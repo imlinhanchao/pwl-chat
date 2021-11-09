@@ -19,7 +19,7 @@
     "postinstall": "npm run lint:fix"
   },
   "build": {
-    "productName": "PWL MoFish App",
+    "productName": "PWL",
     "appId": "icu.pwl.mofile",
     "directories": {
       "output": "build"
