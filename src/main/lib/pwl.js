@@ -64,6 +64,44 @@ class PWL {
         }
     }
 
+    async atlist(name) {
+        let rsp;
+        try {
+            rsp = await this.request({
+                url: `users/names`,
+                method: 'post',
+                data: {
+                    name
+                },
+            });
+
+            if (rsp.status == 401) return { code: '-1', msg: '登录已失效，请重新登录！' };
+
+            return rsp.data;            
+        } catch (e) {
+            throw(e)
+        }
+    }
+
+    async revoke(oId) {
+        let rsp;
+        try {
+            rsp = await this.request({
+                url: `chat-room/revoke/${oId}`,
+                method: 'delete',
+                data: {
+                    apiKey: this.token
+                },
+            });
+
+            if (rsp.status == 401) return { code: '-1', msg: '登录已失效，请重新登录！' };
+
+            return rsp.data;            
+        } catch (e) {
+            throw(e)
+        }
+    }
+
     async push(msg) {
         let rsp;
         try {

@@ -2,6 +2,7 @@ import {
     ipcMain,
 } from 'electron'
 import PWL from '../lib/pwl'
+import windows from './windows'
 
 let create = (app, win) => {
     let openfile = null;
@@ -15,6 +16,10 @@ let create = (app, win) => {
 
     ipcMain.on('win-min', (event, arg) => {
         win.hide()
+    })
+
+    ipcMain.on('win-top', (event, arg) => {
+        win.windows.main.alwaysOnTop = arg.data
     })
 
     ipcMain.on('pwl-token', (event, arg) => {
@@ -31,6 +36,16 @@ let create = (app, win) => {
         if(argv.callback) event.sender.send('pwl-login-callback-' + argv.callback, { data, argv: argv.data, error })
     })
 
+    ipcMain.on('pwl-revoke', async (event, argv) => {
+        let data, error;
+        try {
+            data = await pwl.revoke(argv.data);
+        } catch (err) {
+            error = err;
+        }
+        if(argv.callback) event.sender.send('pwl-revoke-callback-' + argv.callback, { data, argv: argv.data, error })
+    })
+
     ipcMain.on('pwl-push', async (event, argv) => {
         let data, error;
         try {
@@ -39,6 +54,16 @@ let create = (app, win) => {
             error = err;
         }
         if(argv.callback) event.sender.send('pwl-push-callback-' + argv.callback, { data, argv: argv.data, error })
+    })
+
+    ipcMain.on('pwl-at', async (event, argv) => {
+        let data, error;
+        try {
+            data = await pwl.atlist(argv.data);
+        } catch (err) {
+            error = err;
+        }
+        if(argv.callback) event.sender.send('pwl-at-callback-' + argv.callback, { data, argv: argv.data, error })
     })
 
     ipcMain.on('pwl-info', async (event, argv) => {
@@ -61,7 +86,18 @@ let create = (app, win) => {
         if(argv.callback) event.sender.send('pwl-history-callback-' + argv.callback, { data, argv: argv.data, error })
     })
 
-  
+    ipcMain.on('pwl-img', (event, argv) => {
+        try {
+            let size = argv.size;
+            if (size.width < 400) { size.height = size.height * 400 / size.width; size.width = 400; }
+            if (size.width > 800) { size.height = size.height * 800 / size.width; size.width = 800; }
+            if (size.height > 600) { size.width = size.width * 600 / size.height; size.height = 600; }
+            windows.img(app, `/img/${encodeURIComponent(argv.url)}`, size)
+        } catch (err) {
+            console.error(err);
+        }
+    })
+
 }
 
 export default {

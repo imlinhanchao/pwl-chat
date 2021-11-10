@@ -24,6 +24,11 @@ export default new Router({
             ],
         },
         {
+            path: '/img/:imgpath',
+            name: 'image',
+            component: require('@/view/img').default,
+        },
+        {
             path: '*',
             redirect: '/'
         }

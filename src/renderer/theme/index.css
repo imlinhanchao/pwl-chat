@@ -107,8 +107,9 @@ i.fa-help {
     vertical-align: middle;
 }
 .msg-content img {
-    max-height: 400px;
-    max-width: 100px;
+    max-height: 60vh;
+    max-width: 40vw;
+    cursor: pointer;
 }
 
 .ivu-alert-info .ivu-alert-icon, .ivu-anchor-link-active>.ivu-anchor-link-title {
@@ -219,4 +220,7 @@ i.fa-help {
 
 .ivu-message-notice-content {
     background: #303436;
+}
+.ivu-btn-text:hover {
+    background: transparent;
 }

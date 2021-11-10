@@ -12,6 +12,7 @@ import iView from 'iview'
 import 'iview/dist/styles/iview.css'
 import './theme/index.css'
 import './theme/font-awesome.css'
+import { ipcRenderer } from 'electron';
 
 Vue.use(iView)
 Vue.use(VueWorker)
@@ -33,6 +34,18 @@ new Vue({
   router,
   store,
   template: '<App/>',
+  mounted() {
+    document.addEventListener('click', (ev) => {
+      let img = ev.target;
+      if (img.nodeName.toLowerCase() != 'img' || img.className == 'emoji' || img.dataset.action != 'preview') return;
+      let size = {
+          width: img.naturalWidth,
+          height: img.naturalHeight,
+      }
+      ipcRenderer.send('pwl-img', { url: img.src, size });
+    });
+    
+  },
   data: {
     host: '',
     token: ''

@@ -8,6 +8,7 @@
     display: flex;
     flex-direction: column;
     max-width: 85%;
+    position: relative;
 }
 
 .msg-avatar {
@@ -15,6 +16,7 @@
     height: 35px;
     border-radius: 35px;
     margin-top: 1.5em;
+    cursor: pointer;
 }
 
 .msg-user{
@@ -62,6 +64,41 @@
 }
 .chat-form {
     display: flex;
+    position: relative;
+}
+.at-list {
+    position: absolute;
+    background: #3b3e43;
+    top: 2.1em;
+    z-index: 90;
+    left: 32px;
+    color: #dcdee2;
+    box-shadow: 0px 1px 2px 0px #515a6e;
+    border-radius: 0 0 10px 10px;
+    overflow: hidden;
+    .at-item {
+        padding: 6px 5px;
+    }
+    .current-at {
+        background: #515a6e;
+    }
+}
+.logout {
+    cursor: pointer;
+}
+.msg-revoke {
+    position: absolute;
+    background: #FFF;
+    padding: 5px 10px;
+    box-shadow: 1px 1px 3px #515a6e;
+    border-radius: 5px;
+    color: #17233d;
+    top: 50%;
+    left: 50%;
+    cursor: pointer;
+    &:hover {
+        background: #dcdee2;
+    }
 }
 </style>
 
@@ -69,12 +106,14 @@
 <article class="layout no-drag">
     <section>
         <section class="chat-form">
-        <span @click="logout"><Avatar :src="current.userAvatarURL" title="点击注销"/></span>
+        <span class="logout" @click="logout"><Avatar :src="current.userAvatarURL" title="点击注销"/></span>
         <Input ref="password"
             type="text"
             v-model="message"
             placeholder="简单聊聊"
             @on-keyup.enter="wsPush"
+            @on-keyup.up="atUser(-1)"
+            @on-keyup.down="atUser(1)"
         >
             <Button
                 slot="append"
@@ -82,16 +121,21 @@
                 @click="wsPush"
                 style="box-shadow:none;"
             ></Button>
-        </Input></section>
+        </Input>
+        <div class="at-list" v-if="atList.length">
+            <div class="at-item" :class="{ 'current-at':  currentAt == i}" v-for="(u, i) in atList"><Avatar :src="u.userAvatarURL"/> {{u.userName}}</div>
+        </div>
+        </section>
         <section class="chat-content">
             <div v-for="item in content">
                 <div class="msg-item" :class="{'msg-current': item.userName == current.userName}">
-                    <Avatar class="msg-avatar" :src="item.userAvatarURL" />
-                    <div class="msg-item-contain">
+                    <a target="_blank" :href="`https://pwl.icu/member/${item.userName}`"><Avatar class="msg-avatar" :src="item.userAvatarURL" /></a>
+                    <div :ref="`msg-${item.oId}`" class="msg-item-contain" @contextmenu="item.userName == current.userName ? revokeShow(item.oId, $event) : null" @click="revoke = {}">
                         <div class="msg-user">{{item.userName}}</div>
+                        <div class="msg-revoke" v-if="revoke[item.oId]" @click="revokeMsg(item.oId)" :style="{ top: revoke[item.oId].y + 'px', left: revoke[item.oId].x + 'px' }">撤回</div>
                         <div class="msg-contain">
                              <div class="arrow" />
-                            <div class="msg-content" v-html="linkTarget(item.content)"/>
+                            <div class="msg-content" v-html="formatContent(item.content)"/>
                         </div>
                     </div>
                 </div>
@@ -115,9 +159,7 @@
                 this.$router.push('/');
                 return;
             }
-            this.info();
-            this.load();
-            this.wsInit();
+            this.init();
         },
         data () {
             return {
@@ -125,18 +167,59 @@
                 content: [],
                 message: '',
                 rws: null,
-                current: {}
+                current: {},
+                atList: [],
+                currentAt: -1,
+                revoke: {}
             }
         },
         watch: {
+            message(val) {
+                let mat = val.match(/@([^\s]+?)$/);
+                if(!mat) this.atList = [];
+                else this.getAt(mat[1])
+            }
         },
         filters: {
         },
         computed: {
         },
         methods: {
-            linkTarget(content) {
-                return content.replace(/(<a )/g, '$1 target="_blank"');
+            atUser(i) {
+                let len = this.atList.length;
+                this.currentAt = (this.currentAt + i) % len;
+            },
+            revokeShow(id, ev) {
+                let item = this.$refs[`msg-${id}`];
+                this.revoke = { [id]: {
+                    x: ev.clientX - item[0].offsetLeft,
+                    y: ev.clientY - item[0].offsetTop
+                } };
+            },
+            async revokeMsg(id) {
+                let rsp = await ipc.sendipcSync('pwl-revoke', id);
+                if (!rsp) return;
+                rsp = rsp.data;
+                if (rsp.code != 0) {
+                    this.$Message.error(rsp.msg);
+                    return;
+                }
+                console.log(rsp);
+            },
+            async getAt(name) {
+                if (!name || name.length < 2) return;
+                let rsp = await ipc.sendipcSync('pwl-at', name);
+                if (!rsp) return;
+                rsp = rsp.data;
+                if (rsp.code != 0) {
+                    this.$Message.error(rsp.msg);
+                    return;
+                }
+                this.atList = rsp.data;
+                this.currentAt = -1;
+            },
+            formatContent(content) {
+                return content.replace(/(<a )/g, '$1target="_blank" ').replace(/(<img )/g, '$1data-action="preview" ');
             },
             async init() {
                 if(await this.info())
@@ -150,8 +233,8 @@
                 if (!rsp) return false;
                 rsp = rsp.data;
                 if (rsp.code != 0) {
-                    //localStorage.removeItem('token')
-                    //this.$router.push('/');
+                    localStorage.removeItem('token')
+                    this.$router.push('/');
                     return false;
                 }
                 console.log(rsp)
@@ -197,6 +280,11 @@
                 
             },
             async wsPush() {
+                if (this.currentAt >= 0) {
+                    this.message = this.message.replace(/@([^\s]*?)$/, '@' + this.atList[this.currentAt].userName + ' ')
+                    this.atList = [];
+                    return;
+                }
                 if (!this.message) return;
                 let rsp = await ipc.sendipcSync('pwl-push', this.message);
                 if (!rsp) return;
