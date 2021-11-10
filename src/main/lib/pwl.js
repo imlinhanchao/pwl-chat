@@ -42,6 +42,8 @@ class PWL {
 
             if (rsp.data.code == 0) this.token = token;
 
+            if (rsp.status == 401) return { code: '-1', msg: '登录已失效，请重新登录！' };
+
             return rsp.data
         } catch (e) {
             throw(e)
@@ -53,6 +55,8 @@ class PWL {
             let rsp = await this.request({
                 url: `chat-room/more?page=${page}&apiKey=${this.token}`
             })
+
+            if (rsp.status == 401) return { code: '-1', msg: '登录已失效，请重新登录！' };
 
             return rsp.data;
         } catch (e) {
@@ -72,7 +76,7 @@ class PWL {
                 },
             });
 
-            if(rsp.status == 401) return { code: '-1', msg: '登录已失效，请重新登录！' };
+            if (rsp.status == 401) return { code: '-1', msg: '登录已失效，请重新登录！' };
 
             return rsp.data;            
         } catch (e) {
