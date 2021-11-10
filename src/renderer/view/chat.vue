@@ -91,7 +91,7 @@
                         <div class="msg-user">{{item.userName}}</div>
                         <div class="msg-contain">
                              <div class="arrow" />
-                            <div class="msg-content" v-html="item.content" />
+                            <div class="msg-content" v-html="linkTarget(item.content)"/>
                         </div>
                     </div>
                 </div>
@@ -135,6 +135,9 @@
         computed: {
         },
         methods: {
+            linkTarget(content) {
+                return content.replace(/(<a )/g, '$1 target="_blank"');
+            },
             async init() {
                 if(await this.info())
                 {
@@ -147,8 +150,8 @@
                 if (!rsp) return false;
                 rsp = rsp.data;
                 if (rsp.code != 0) {
-                    localStorage.removeItem('token')
-                    this.$router.push('/');
+                    //localStorage.removeItem('token')
+                    //this.$router.push('/');
                     return false;
                 }
                 console.log(rsp)

@@ -1,4 +1,4 @@
-import { app } from 'electron'
+import { app, shell } from 'electron'
 import blocks from './block'
 
 let mainWindow
@@ -28,6 +28,17 @@ app.on('activate', () => {
   }
 })
 app.commandLine.appendSwitch('ignore-certificate-errors')
+
+app.on('web-contents-created', (e, contents) => {
+  // Check for a webview
+  if (contents.getType() == 'window') {
+    // Listen for any new window events
+    contents.on('new-window', (e, url) => {
+      e.preventDefault()
+      shell.openExternal(url)
+    })
+  }
+})
 
 /**
  * Auto Updater
