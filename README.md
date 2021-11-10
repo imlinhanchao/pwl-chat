@@ -1,25 +1,34 @@
-# pwl-app
+<p align="center">
+  <a href="https://pwl.icu">
+    <img width="200" src="./build/icons/256x256.png">
+  </a>
+</p>
 
-> An electron-vue project
+<h1 align="center">摸鱼派聊天室</h1>
 
-#### Build Setup
+基于摸鱼打工人社区——[摸鱼派](https://pwl.icu)开放 API 开发而成，可以在里面愉快的吹水摸鱼。
+
+## ✨ 功能
+
+- 😎 基本聊天吹水；
+- 💬 撤回消息；
+- 📷 大图查看；
+- 👉 @ 列表选择；
+
+## 🛡 编译运行
 
 ``` bash
-# install dependencies
+# 安装依赖
 npm install
 
-# serve with hot reload at localhost:9080
+# 开发运行，网页将会挂靠在 localhost:9080
 npm run dev
 
-# build electron application for production
+# 编译生成 electron 应用
 npm run build
-
-
-# lint all JS/Vue component files in `src/`
-npm run lint
 
 ```
 
----
+## 👀 界面
 
-This project was generated with [electron-vue](https://github.com/SimulatedGREG/electron-vue)@[7c4e3e9](https://github.com/SimulatedGREG/electron-vue/tree/7c4e3e90a772bd4c27d2dd4790f61f09bae0fcef) using [vue-cli](https://github.com/vuejs/vue-cli). Documentation about the original structure can be found [here](https://simulatedgreg.gitbooks.io/electron-vue/content/index.html).
+![picture 1](/static/images/preview.png)  
