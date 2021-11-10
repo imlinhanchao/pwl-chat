@@ -13,7 +13,6 @@ class PWL {
         this.cookies = {}
         if (!token) return;
         this.token = token;
-        this.cookies['sym-ce'] = this.token;
     }
 
     async login(data) {
@@ -62,8 +61,9 @@ class PWL {
     }
 
     async push(msg) {
+        let rsp;
         try {
-            let rsp = await this.request({
+            rsp = await this.request({
                 url: `chat-room/send`,
                 method: 'post',
                 data: {
@@ -71,6 +71,8 @@ class PWL {
                     apiKey: this.token
                 },
             });
+
+            if(rsp.status == 401) return { code: '-1', msg: '登录已失效，请重新登录！' };
 
             return rsp.data;            
         } catch (e) {
@@ -110,11 +112,13 @@ class PWL {
             }),
         };
     
+        let rsp;
         try {
-            let res = await this.axios.request(options);
+            rsp = await this.axios.request(options);
     
-            return res;
+            return rsp;
         } catch (e) {
+            if (e.response.status == 401) return e.response;
             console.error(e);
             throw(e)
         }
