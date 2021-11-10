@@ -74,12 +74,12 @@
             type="text"
             v-model="message"
             placeholder="简单聊聊"
-            @on-keyup.enter="pushMsg"
+            @on-keyup.enter="wsPush"
         >
             <Button
                 slot="append"
                 icon="md-send"
-                @click="pushMsg"
+                @click="wsPush"
                 style="box-shadow:none;"
             ></Button>
         </Input></section>
@@ -110,8 +110,8 @@
         component: {
         },
         mounted () {
-            let token = localStorage.getItem('token')
-            if (!token) {
+            this.$root.token = localStorage.getItem('token')
+            if (!this.$root.token) {
                 this.$router.push('/');
                 return;
             }
@@ -135,11 +135,24 @@
         computed: {
         },
         methods: {
+            async init() {
+                if(await this.info())
+                {
+                    await this.load();
+                    await this.wsInit();
+                }
+            },
             async info() {
-                let rsp = await ipc.sendipcSync('pwl-info');
-                if (!rsp) return;
+                let rsp = await ipc.sendipcSync('pwl-info', this.$root.token);
+                if (!rsp) return false;
+                rsp = rsp.data;
+                if (rsp.code != 0) {
+                    this.$Message.error(rsp.msg);
+                    return false;
+                }
                 console.log(rsp)
                 this.current = rsp.data;
+                return true;
             },
             async load() {
                 let rsp = await ipc.sendipcSync('pwl-history', this.page);
@@ -158,7 +171,7 @@
             },
             wsInit() {
                 let that = this;
-                this.rws = new ReconnectingWebSocket("wss://pwl.icu/chat-room-channel?type=index");
+                this.rws = new ReconnectingWebSocket(`wss://pwl.icu/chat-room-channel?apiKey=${this.$root.token}`);
                 this.rws.reconnectInterval = 10000
 
                 this.rws.onopen = (e) => {
@@ -168,7 +181,7 @@
                     }, 1000 * 60 * 3)
                 }
                 this.rws.onmessage = (e) => {
-                    that.messageWs(e)
+                    that.wsMessage(e)
                 }
                 this.rws.onerror = (e) => {
                     console.log("onerror");
@@ -179,7 +192,7 @@
                 }
                 
             },
-            async pushMsg(e) {
+            async wsPush() {
                 if (!this.message) return;
                 let rsp = await ipc.sendipcSync('pwl-push', this.message);
                 if (!rsp) return;
@@ -191,7 +204,7 @@
                 console.log(rsp);
                 this.message = '';
             },
-            messageWs(e) {
+            wsMessage(e) {
                 console.log("onmessage");
                 console.log(e)
                 let msg = JSON.parse(e.data)

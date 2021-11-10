@@ -44,7 +44,7 @@ let create = (app, win) => {
     ipcMain.on('pwl-info', async (event, argv) => {
         let data, error;
         try {
-            data = await pwl.info();
+            data = await pwl.info(argv.data);
         } catch (err) {
             error = err;
         }

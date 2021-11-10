@@ -88,9 +88,9 @@
         component: {
         },
         mounted () {
-            let token = localStorage.getItem('token')
-            if (!token) return;
-            ipcRenderer.send('pwl-token', { data: token });
+            this.$root.token = localStorage.getItem('token')
+            if (!this.$root.token) return;
+            ipcRenderer.send('pwl-token', { data: this.$root.token });
             this.$router.push('/chat');
         },
         data () {
@@ -148,7 +148,7 @@
                             this.$Message.error(rsp.msg);
                             return;
                         }
-                        localStorage.setItem('token', rsp.token);
+                        localStorage.setItem('token', rsp.Key);
                         this.$router.push('/chat');
                     } catch (err) {
                         this.$Message.error(err.message);

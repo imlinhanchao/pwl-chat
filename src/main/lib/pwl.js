@@ -19,18 +19,15 @@ class PWL {
     async login(data) {
         try {
             let rsp = await this.request({
-                url: 'login',
+                url: 'api/getKey',
                 method: 'post',
                 data: {
                     nameOrEmail: data.username,
-                    rememberLogin: true,
                     userPassword: SparkMD5.hash(data.passwd)
                 },
             });
 
-            console.log(rsp.data);
-            this.token = rsp.data.token;
-            this.cookies['sym-ce'] = this.token;
+            this.token = rsp.data.Key;
 
             return rsp.data;            
         } catch (e) {
@@ -38,17 +35,14 @@ class PWL {
         }
     }
 
-    async info() {
+    async info(token) {
         try {
             let rsp = await this.request({
-                url: ''
+                url: `api/user?apiKey=${token}`
             })
-            let mat = rsp.data.match(/currentUserName: '([^']*?)'/);
-            let username = mat ? mat[1] : '';
-            if (!username) return { code: 0, data: { username } };
-            rsp = await this.request({
-                url: `user/${username}`
-            })
+
+            if (rsp.data.code == 0) this.token = token;
+
             return rsp.data
         } catch (e) {
             throw(e)
@@ -58,7 +52,7 @@ class PWL {
     async history(page=1) {
         try {
             let rsp = await this.request({
-                url: `chat-room/more?page=${page}`
+                url: `chat-room/more?page=${page}&apiKey=${this.token}`
             })
 
             return rsp.data;
@@ -70,10 +64,11 @@ class PWL {
     async push(msg) {
         try {
             let rsp = await this.request({
-                url: 'chat-room/send',
+                url: `chat-room/send`,
                 method: 'post',
                 data: {
                     content: msg,
+                    apiKey: this.token
                 },
             });
 

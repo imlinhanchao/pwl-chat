@@ -34,7 +34,8 @@ new Vue({
   store,
   template: '<App/>',
   data: {
-    host: ''
+    host: '',
+    token: ''
   },
   methods: {
     sendipc: ipc.sendipc,
