@@ -35,7 +35,7 @@ class Windows {
 
         const winURL = process.env.NODE_ENV === 'development' ?
             `http://localhost:9080/#${url}` :
-            `file://${__dirname}/index.html#/${url}`
+            `file://${__dirname}/index.html#${url}`
 
         this.window.loadURL(winURL, {
             httpReferrer:"https://pwl.icu/"
