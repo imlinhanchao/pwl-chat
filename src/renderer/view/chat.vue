@@ -147,7 +147,8 @@
                 if (!rsp) return false;
                 rsp = rsp.data;
                 if (rsp.code != 0) {
-                    this.$Message.error(rsp.msg);
+                    localStorage.removeItem('token')
+                    this.$router.push('/');
                     return false;
                 }
                 console.log(rsp)
