@@ -87,18 +87,30 @@
     cursor: pointer;
     margin: 5px;
 }
-.msg-revoke {
+.msg-menu {
     position: absolute;
     background: #FFF;
-    padding: 5px 10px;
     box-shadow: 1px 1px 3px #515a6e;
     border-radius: 5px;
     color: #17233d;
-    top: 50%;
-    left: 50%;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    .msg-menu-item {
+        padding: 5px 10px;
+        &:hover {
+            background: #dcdee2;
+        }
+    }
+}
+.msg-more {
+    text-align: center;
+    padding: .3em;
+    margin: 5px 0 0;
     cursor: pointer;
     &:hover {
-        background: #dcdee2;
+        color: #57a3f3;
     }
 }
 </style>
@@ -108,7 +120,7 @@
     <section>
         <section class="chat-form">
         <span class="logout" @click="logout"><Avatar :src="current.userAvatarURL" title="点击注销"/></span>
-        <Input ref="password"
+        <Input ref="message"
             type="text"
             v-model="message"
             placeholder="简单聊聊"
@@ -131,9 +143,12 @@
             <div v-for="item in content">
                 <div class="msg-item" :class="{'msg-current': item.userName == current.userName}">
                     <a target="_blank" :href="`https://pwl.icu/member/${item.userName}`"><Avatar class="msg-avatar" :src="item.userAvatarURL" /></a>
-                    <div :ref="`msg-${item.oId}`" class="msg-item-contain" @contextmenu="item.userName == current.userName ? revokeShow(item.oId, $event) : null" @click="revoke = {}">
+                    <div :ref="`msg-${item.oId}`" class="msg-item-contain" @contextmenu="menuShow(item, $event)" @click="menu = {}">
                         <div class="msg-user">{{item.userName}}</div>
-                        <div class="msg-revoke" v-if="revoke[item.oId]" @click="revokeMsg(item.oId)" :style="{ top: revoke[item.oId].y + 'px', left: revoke[item.oId].x + 'px' }">撤回</div>
+                        <div class="msg-menu" v-if="menu[item.oId]" :style="{ top: menu[item.oId].y + 'px', left: menu[item.oId].x + 'px' }">
+                            <div class="msg-menu-item" v-if="item.userName == current.userName" @click="revokeMsg(item.oId)">撤回</div>
+                            <div class="msg-menu-item" v-if="item.userName != current.userName" @click="atMsg(item)">@{{item.userName}}</div>
+                        </div>
                         <div class="msg-contain">
                              <div class="arrow" />
                             <div class="msg-content" v-html="formatContent(item.content)"/>
@@ -141,6 +156,7 @@
                     </div>
                 </div>
             </div>
+            <div class="msg-more" @click="load(page + 1)" v-if="content.length < 9900"><Icon custom="fa fa-caret-down" /></div>
         </section>
     </section>
 </article>
@@ -172,7 +188,7 @@
                 current: {},
                 atList: [],
                 currentAt: -1,
-                revoke: {}
+                menu: {}
             }
         },
         watch: {
@@ -191,12 +207,13 @@
                 let len = this.atList.length;
                 this.currentAt = (this.currentAt + i) % len;
             },
-            revokeShow(id, ev) {
-                let item = this.$refs[`msg-${id}`];
-                this.revoke = { [id]: {
-                    x: ev.clientX - item[0].offsetLeft,
-                    y: ev.clientY - item[0].offsetTop
-                } };
+            menuShow(item, ev) {
+                let ele = this.$refs[`msg-${item.oId}`][0];
+                let pos = {
+                    x: ev.clientX - ele.offsetLeft,
+                    y: ev.clientY - ele.offsetTop
+                }
+                this.menu = { [item.oId]: pos };
             },
             async revokeMsg(id) {
                 let rsp = await ipc.sendipcSync('pwl-revoke', id);
@@ -207,6 +224,10 @@
                     return;
                 }
                 console.log(rsp);
+            },
+            atMsg(item) {
+                this.message += `@${item.userName} `;
+                this.$refs['message'].focus();
             },
             async getAt(name) {
                 if (!name || name.length < 2) return;
@@ -226,7 +247,8 @@
             async init() {
                 if(await this.info())
                 {
-                    await this.load();
+                    await this.load(1);
+                    await this.load(2);
                     await this.wsInit();
                 }
             },
@@ -243,16 +265,19 @@
                 this.current = rsp.data;
                 return true;
             },
-            async load() {
-                let rsp = await ipc.sendipcSync('pwl-history', this.page);
+            async load(page) {
+                let rsp = await ipc.sendipcSync('pwl-history', page);
                 if (!rsp) return;
                 rsp = rsp.data;
                 if (rsp.code != 0) {
                     this.$Message.error(rsp.msg);
                     return;
                 }
-                this.content = rsp.data;
-                this.page++;
+                let oIds = this.content.map(c => c.oId);
+                let data = rsp.data.filter(d => oIds.indexOf(d.oId) < 0)
+                if(page > 1) this.content = this.content.concat(data);
+                else this.content = rsp.data;
+                this.page = page;
             },
             logout() {
                 localStorage.removeItem('token');
@@ -319,7 +344,7 @@
                         break;
                     case "msg":  //消息
                         this.content.splice(0, 0, msg)
-                        if (this.content.length > 10000) this.load();
+                        if (this.content.length > 10000) this.load(1);
                         ipcRenderer.send('sys-msg', msg);
                         break;
                 }

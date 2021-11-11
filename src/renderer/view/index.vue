@@ -17,6 +17,11 @@ header {
         }
         span {
             vertical-align: middle;
+            overflow:hidden;
+            text-overflow:ellipsis;
+            white-space:nowrap;
+            max-width: calc(100vw - 210px);
+            display: inline-block;
         }
     }
     .control {
@@ -41,6 +46,13 @@ header {
     border-radius: 10px;
     border: 2px dashed #aca49a;
     vertical-align: middle;
+}
+</style>
+<style lang="less">
+.control {
+    .ivu-btn {
+        padding: 5px 10px;
+    }
 }
 </style>
 

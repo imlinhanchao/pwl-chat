@@ -22,6 +22,8 @@ class Windows {
             parent: parent,
             width: size.width,
             height: size.height,
+            minWidth: size.width,
+            minHeight: size.height,
             transparent: transparent,
             frame: frame,
             resizable: resizable,

@@ -35,6 +35,13 @@
         vertical-align: middle;
     }
 }
+.login-footer {
+    display: flex;
+    flex-direction: row;
+    .register-btn { 
+        margin-left: 5px;
+    }
+}
 </style>
 
 <template>
@@ -73,6 +80,7 @@
             </FormItem>
             <div class="login-footer">
                 <Button type="success" long @click="submit('loginForm')" :loading="login_loading">登录</Button>
+                <Button type="default" class="register-btn" long @click="register">注册</Button>
             </div>
         </Form>
     </section>
@@ -155,6 +163,9 @@
                     }
                 });
             },
+            register() {
+                window.open('https://pwl.icu/register');
+            }
         }
     }
 </script>
