@@ -85,6 +85,7 @@
 }
 .logout {
     cursor: pointer;
+    margin: 5px;
 }
 .msg-revoke {
     position: absolute;
