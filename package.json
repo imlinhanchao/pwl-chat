@@ -20,14 +20,16 @@
   },
   "build": {
     "productName": "PWL",
-    "appId": "icu.pwl.mofile",
+    "appId": "icu.pwl.mofish",
     "directories": {
       "output": "build"
     },
     "files": [
       "dist/electron/**/*"
     ],
-    "extraResources": [],
+    "extraResources": [
+      "audio/**/*"
+    ],
     "dmg": {
       "contents": [
         {

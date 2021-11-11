@@ -13,7 +13,7 @@ let create = (app, win) => {
     // tray
     let timer = null, tick = 0, count = 0;
     let icon = path.join(__static, 'icon', 'icon.png')
-    let sound = path.join(__static, 'audio', 'shake.wav')
+    let sound = path.join(__dirname, '..', '..', '..', 'audio', 'shake.wav')
     tray = new Tray(icon)
     const contextMenu = Menu.buildFromTemplate([{
             label: 'Show',
