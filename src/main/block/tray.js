@@ -1,14 +1,20 @@
 import {
     Menu,
-    Tray
+    Tray,
+    ipcMain,
+    nativeImage
 } from 'electron'
 import path from 'path'
 import info from '../../../package.json'
+import music from 'sound-play'
 
 var tray
 let create = (app, win) => {
     // tray
-    tray = new Tray(path.join(__static, 'icon', '/icon.png'))
+    let timer = null, tick = 0, count = 0;
+    let icon = path.join(__static, 'icon', 'icon.png')
+    let sound = path.join(__static, 'audio', 'shake.wav')
+    tray = new Tray(icon)
     const contextMenu = Menu.buildFromTemplate([{
             label: 'Show',
             type: 'normal',
@@ -26,9 +32,38 @@ let create = (app, win) => {
     ])
     tray.setToolTip(info.description)
     tray.setContextMenu(contextMenu)
-    tray.on('double-click',()=>{       
+    tray.on('double-click', () => {
         win.show();
+    })
+    ipcMain.on('sys-msg', (event, arg) => {
+        if (win.isVisable() && win.isFocused()) return;
+
+        music.play(sound)
+        count ++;
+        tray.setToolTip(`摸鱼派聊天室-你有${count}条新消息`)
+        if (timer != null) return;
+
+        timer = setInterval(() => {
+            tick += 1
+            if (tick % 2 === 0) {
+                tray.setImage(icon)
+            } else {
+                tray.setImage(nativeImage.createEmpty())
+            }
+        }, 500)
+    })
+    tray.on('click', () => {
+        if (count <= 0) return;
+        tray.setToolTip(info.description)
+        win.show()
+        tray.setImage(icon)
+        clearInterval(timer)
+        timer = null
+        tick = 0
+        count = 0
     })
 }
 
-export default { create }
+export default {
+    create
+}

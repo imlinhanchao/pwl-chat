@@ -28,6 +28,14 @@ let hide = () => {
     windows.main.hide()
 }
 
+let isVisable = () => {
+    return windows.main.win.isVisible();
+}
+
+let isFocused = () => {
+    return windows.main.win.isFocused();
+}
+
 let img = (app, url, size) => {
     let imgWin = new Win(app, {
         quitEvent(event) {
@@ -45,5 +53,7 @@ let img = (app, url, size) => {
 }
 
 export default { 
-    create, show, hide, img, windows
+    create, show, hide, isVisable, isFocused, img, windows, get main () {
+        return windows.main.win;
+    }
 }

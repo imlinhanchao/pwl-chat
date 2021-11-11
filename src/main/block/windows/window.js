@@ -31,6 +31,8 @@ class Windows {
             }
         })
 
+        this.window.setMenu(null);
+
         this.size = size
 
         const winURL = process.env.NODE_ENV === 'development' ?

@@ -146,6 +146,7 @@
 </template>
 
 <script>
+    import { ipcRenderer } from 'electron'
     import ipc from '../ipc'
     import ReconnectingWebSocket from "reconnecting-websocket";
 
@@ -316,8 +317,9 @@
                         }
                         break;
                     case "msg":  //消息
-                        this.content.splice(0,0,msg)
+                        this.content.splice(0, 0, msg)
                         if (this.content.length > 10000) this.load();
+                        ipcRenderer.send('sys-msg', msg);
                         break;
                 }
             }

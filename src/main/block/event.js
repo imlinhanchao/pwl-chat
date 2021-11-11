@@ -19,7 +19,11 @@ let create = (app, win) => {
     })
 
     ipcMain.on('win-top', (event, arg) => {
-        win.windows.main.alwaysOnTop = arg.data
+        win.windows.main.win.setAlwaysOnTop(arg, 'screen')
+    })
+
+    ipcMain.on('win-opacity', (event, arg) => {
+        win.windows.main.win.setOpacity(arg ? .6 : 1)
     })
 
     ipcMain.on('pwl-token', (event, arg) => {
