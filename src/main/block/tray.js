@@ -54,8 +54,11 @@ let create = (app, win) => {
     })
     tray.on('click', () => {
         if (count <= 0) return;
-        tray.setToolTip(info.description)
         win.show()
+    })
+    win.main.on('focus', () => {
+        if (count <= 0) return;
+        tray.setToolTip(info.description)
         tray.setImage(icon)
         clearInterval(timer)
         timer = null

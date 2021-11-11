@@ -19,7 +19,7 @@ let create = (app, win) => {
     })
 
     ipcMain.on('win-top', (event, arg) => {
-        win.windows.main.win.setAlwaysOnTop(arg, 'screen')
+        win.windows.main.win.setAlwaysOnTop(arg, 'floating')
     })
 
     ipcMain.on('win-opacity', (event, arg) => {
