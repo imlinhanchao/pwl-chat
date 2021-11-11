@@ -43,9 +43,6 @@
     padding: 8px 15px;
     color:#232425;
     word-break: break-word;
-    ul, ol {
-        list-style-position: inside;
-    }
 }
 .msg-current {
     flex-direction: row-reverse;
@@ -117,6 +114,13 @@
     }
 }
 </style>
+<style lang="less">
+.msg-content {
+    ul, ol {
+        list-style-position: inside;
+    }
+}
+</style>
 
 <template>
 <article class="layout no-drag">
@@ -159,7 +163,10 @@
                     </div>
                 </div>
             </div>
-            <div class="msg-more" @click="load(page + 1)" v-if="content.length < 9900"><Icon custom="fa fa-caret-down" /></div>
+            <div class="msg-more" @click="load(page + 1)" v-if="content.length < 9900">
+                <Icon custom="fa fa-caret-down" v-if="!loading"/>
+                <Icon custom="fa fa-circle-o-notch fa-spin" v-if="loading"/>
+            </div>
         </section>
     </section>
 </article>
@@ -191,7 +198,8 @@
                 current: {},
                 atList: [],
                 currentAt: -1,
-                menu: {}
+                menu: {},
+                loading: false
             }
         },
         watch: {
@@ -269,7 +277,10 @@
                 return true;
             },
             async load(page) {
+                if (this.loading) return;
+                this.loading = true;
                 let rsp = await ipc.sendipcSync('pwl-history', page);
+                this.loading = false;
                 if (!rsp) return;
                 rsp = rsp.data;
                 if (rsp.code != 0) {
