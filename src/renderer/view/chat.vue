@@ -79,6 +79,8 @@
     overflow: hidden;
     .at-item {
         padding: 6px 5px;
+        user-select: none;
+        cursor: pointer;
     }
     .current-at {
         background: #515a6e;
@@ -113,6 +115,10 @@
         color: #57a3f3;
     }
 }
+.hidden {
+    visibility: hidden;
+    position: absolute;
+}
 </style>
 <style lang="less">
 .msg-content {
@@ -124,6 +130,9 @@
 
 <template>
 <article class="layout no-drag">
+    <section class="hidden">
+        <span style="font-size:12px">{{message}}</span>
+    </section>    
     <section @click="menu = {}">
         <section class="chat-form">
         <span class="logout" @click="logout"><Avatar :src="current.userAvatarURL" title="点击注销"/></span>
@@ -132,8 +141,8 @@
             v-model="message"
             placeholder="简单聊聊"
             @on-keyup.enter="wsPush"
-            @on-keyup.up="atUser(-1)"
-            @on-keyup.down="atUser(1)"
+            @on-keyup.up.stop="selAtUser(-1)"
+            @on-keyup.down.stop="selAtUser(1)"
         >
             <Button
                 slot="append"
@@ -143,7 +152,7 @@
             ></Button>
         </Input>
         <div class="at-list" v-if="atList.length">
-            <div class="at-item" :class="{ 'current-at':  currentAt == i}" v-for="(u, i) in atList"><Avatar :src="u.userAvatarURL"/> {{u.userName}}</div>
+            <div class="at-item" @click="atUser(i)" :class="{ 'current-at':  currentAt == i}" v-for="(u, i) in atList"><Avatar :src="u.userAvatarURL"/> {{u.userName}}</div>
         </div>
         </section>
         <section class="chat-content">
@@ -199,12 +208,15 @@
                 atList: [],
                 currentAt: -1,
                 menu: {},
-                loading: false
+                loading: false,
+                lastCursor: 0
             }
         },
         watch: {
             message(val) {
-                let mat = val.match(/@([^\s]+?)$/);
+                let data = val.slice(0, this.msgCursor());
+                let mat = data.match(/@([^\s]+?)$/);
+                console.log(this.msgCursor, data);
                 if(!mat) this.atList = [];
                 else this.getAt(mat[1])
             }
@@ -212,9 +224,26 @@
         filters: {
         },
         computed: {
+            
         },
         methods: {
+            msgCursor() {
+                return this.$refs['message'].$el.querySelector('input').selectionStart
+            },
             atUser(i) {
+                let preMsg = this.message.slice(0, this.lastCursor)
+                    .replace(/@([^\s]*?)$/, 
+                        '@' + this.atList[i].userName + ' ');
+                this.message = preMsg + this.message.slice(this.lastCursor)
+                this.lastCursor = preMsg.length;
+                this.atList = [];
+                this.currentAt = -1;
+                this.$nextTick(() => {
+                    this.$refs['message'].focus();
+                    this.$refs['message'].$el.querySelector('input').setSelectionRange(this.lastCursor, this.lastCursor)
+                });
+            },
+            selAtUser(i) {
                 let len = this.atList.length;
                 this.currentAt = (this.currentAt + i) % len;
             },
@@ -251,6 +280,7 @@
                 }
                 this.atList = rsp.data;
                 this.currentAt = -1;
+                this.lastCursor = this.msgCursor();
             },
             formatContent(content) {
                 return content.replace(/(<a )/g, '$1target="_blank" ').replace(/(<img )/g, '$1data-action="preview" ');
@@ -322,9 +352,7 @@
             },
             async wsPush() {
                 if (this.currentAt >= 0) {
-                    this.message = this.message.replace(/@([^\s]*?)$/, '@' + this.atList[this.currentAt].userName + ' ')
-                    this.atList = [];
-                    this.currentAt = -1;
+                    this.atUser(this.currentAt);
                     return;
                 }
                 if (!this.message) return;
