@@ -63,6 +63,7 @@ header {
     },
     mounted () {
         this.image = this.$route.params.imgpath;
+        document.title = path.basename(this.image)
     },
     data () {
         return {

@@ -42,6 +42,10 @@
     border-radius: 5px;
     padding: 8px 15px;
     color:#232425;
+    word-break: break-word;
+    ul, ol {
+        list-style-position: inside;
+    }
 }
 .msg-current {
     flex-direction: row-reverse;
@@ -85,7 +89,7 @@
 }
 .logout {
     cursor: pointer;
-    margin: 5px;
+    margin-right: 5px;
 }
 .msg-menu {
     position: absolute;
@@ -106,7 +110,6 @@
 }
 .msg-more {
     text-align: center;
-    padding: .3em;
     margin: 5px 0 0;
     cursor: pointer;
     &:hover {
@@ -117,7 +120,7 @@
 
 <template>
 <article class="layout no-drag">
-    <section>
+    <section @click="menu = {}">
         <section class="chat-form">
         <span class="logout" @click="logout"><Avatar :src="current.userAvatarURL" title="点击注销"/></span>
         <Input ref="message"
@@ -143,7 +146,7 @@
             <div v-for="item in content">
                 <div class="msg-item" :class="{'msg-current': item.userName == current.userName}">
                     <a target="_blank" :href="`https://pwl.icu/member/${item.userName}`"><Avatar class="msg-avatar" :src="item.userAvatarURL" /></a>
-                    <div :ref="`msg-${item.oId}`" class="msg-item-contain" @contextmenu="menuShow(item, $event)" @click="menu = {}">
+                    <div :ref="`msg-${item.oId}`" class="msg-item-contain" @contextmenu="menuShow(item, $event)">
                         <div class="msg-user">{{item.userName}}</div>
                         <div class="msg-menu" v-if="menu[item.oId]" :style="{ top: menu[item.oId].y + 'px', left: menu[item.oId].x + 'px' }">
                             <div class="msg-menu-item" v-if="item.userName == current.userName" @click="revokeMsg(item.oId)">撤回</div>
@@ -310,6 +313,7 @@
                 if (this.currentAt >= 0) {
                     this.message = this.message.replace(/@([^\s]*?)$/, '@' + this.atList[this.currentAt].userName + ' ')
                     this.atList = [];
+                    this.currentAt = -1;
                     return;
                 }
                 if (!this.message) return;
