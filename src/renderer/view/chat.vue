@@ -138,6 +138,7 @@
     max-height: 60vh;
     max-width: 40vw;
     cursor: pointer;
+    background: #FFF;
 }
 </style>
 
