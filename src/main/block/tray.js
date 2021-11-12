@@ -52,18 +52,24 @@ let create = (app, win) => {
             }
         }, 500)
     })
-    tray.on('click', () => {
-        if (count <= 0) return;
-        win.show()
-    })
-    win.main.on('focus', () => {
+    function clearMsg() {
         if (count <= 0) return;
         tray.setToolTip(info.description)
         tray.setImage(icon)
         clearInterval(timer)
         timer = null
         tick = 0
-        count = 0
+        count = 0        
+    }
+    tray.on('click', () => {
+        if (count <= 0) return;
+        win.show()
+    })
+    win.main.on('focus', () => {
+        clearMsg()
+    })
+    win.main.on('restore', () => {
+        clearMsg()
     })
 }
 
