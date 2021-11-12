@@ -118,8 +118,8 @@
             };
             return {
                 login: {
-                    username: '',
-                    passwd: '',
+                    username: localStorage.getItem('username') || '',
+                    passwd: localStorage.getItem('passwd') || '',
                 },
                 isPasswdShow: false,
                 ruleValidate: {
