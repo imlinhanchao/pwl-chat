@@ -197,7 +197,7 @@
                 <div class="msg-item" :class="{'msg-current': item.userName == current.userName}">
                     <a target="_blank" :href="`https://pwl.icu/member/${item.userName}`"><Avatar class="msg-avatar" :src="item.userAvatarURL" /></a>
                     <div :ref="`msg-${item.oId}`" class="msg-item-contain" @contextmenu="menuShow(item, $event)">
-                        <div class="msg-user">{{item.userName}}</div>
+                        <div class="msg-user" :title="item.userNickname">{{item.userName}}</div>
                         <div class="msg-menu" v-if="menu[item.oId]" :style="{ top: menu[item.oId].y + 'px', left: menu[item.oId].x + 'px' }">
                             <div class="msg-menu-item" v-if="item.userName == current.userName" @click="revokeMsg(item.oId)">撤回</div>
                             <div class="msg-menu-item" v-if="item.userName != current.userName" @click="atMsg(item)">@{{item.userName}}</div>
