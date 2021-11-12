@@ -70,7 +70,7 @@
     display: flex;
     position: relative;
 }
-.at-list {
+.at-list, .emoji-list {
     position: absolute;
     background: #3b3e43;
     top: 2.1em;
@@ -80,13 +80,23 @@
     box-shadow: 0px 1px 2px 0px #515a6e;
     border-radius: 0 0 10px 10px;
     overflow: hidden;
-    .at-item {
+    .at-item, .emoji-item {
         padding: 6px 5px;
         user-select: none;
         cursor: pointer;
     }
     .current-at {
         background: #515a6e;
+    }
+}
+.emoji-list {
+    display: flex;
+    flex-direction: row;
+    left: 40px;
+    .emoji-item {
+        img {
+            width: 30px;
+        }
     }
 }
 .logout {
@@ -159,8 +169,10 @@
             v-model="message"
             placeholder="简单聊聊"
             @on-keyup.enter="wsPush"
-            @on-keyup.up.stop="selAtUser(-1)"
-            @on-keyup.down.stop="selAtUser(1)"
+            @on-keyup.up="selList(-1)"
+            @on-keyup.down="selList(1)"
+            @on-keyup.left="selList(-1)"
+            @on-keyup.right="selList(1)"
         >
             <Button
                 slot="append"
@@ -169,9 +181,12 @@
                 style="box-shadow:none;"
             ></Button>
         </Input>
-        <div class="at-list" v-if="atList.length">
-            <div class="at-item" @click="atUser(i)" :class="{ 'current-at':  currentAt == i}" v-for="(u, i) in atList"><Avatar :src="u.userAvatarURL"/> {{u.userName}}</div>
-        </div>
+        <section class="at-list" v-if="atList.length">
+            <div class="at-item" @click="atUser(i)" :class="{ 'current-at':  currentSel == i}" v-for="(u, i) in atList"><Avatar :src="u.userAvatarURL"/> {{u.userName}}</div>
+        </section>
+        <section class="emoji-list" v-if="emojiList.length">
+            <div class="emoji-item" @click="emojiSel(i)" :class="{ 'current-at':  currentSel == i}" v-for="(u, i) in emojiList"><img :src="u.url"/></div>
+        </section>
         </section>
         <section class="chat-content" ref="chat-content">
             <div v-for="item in content">
@@ -204,6 +219,7 @@
     import { ipcRenderer } from 'electron'
     import ipc from '../ipc'
     import ReconnectingWebSocket from "reconnecting-websocket";
+    import emoji from '../emoji';
 
     export default {
         name: 'chat',
@@ -225,7 +241,8 @@
                 rws: null,
                 current: {},
                 atList: [],
-                currentAt: -1,
+                emojiList: [],
+                currentSel: -1,
                 menu: {},
                 loading: false,
                 lastCursor: 0
@@ -234,10 +251,11 @@
         watch: {
             message(val) {
                 let data = val.slice(0, this.msgCursor());
-                let mat = data.match(/@([^\s]+?)$/);
-                console.log(this.msgCursor, data);
-                if(!mat) this.atList = [];
-                else this.getAt(mat[1])
+                let matAt = data.match(/@([^\s]+?)$/);
+                let matEmoji = data.match(/:([^:]+?)$/);
+                if(matAt) this.getAt(matAt[1])
+                else if(matEmoji) this.getEmoji(matEmoji[1])
+                else this.emojiList = this.atList = []
             }
         },
         filters: {
@@ -249,22 +267,57 @@
             msgCursor() {
                 return this.$refs['message'].$el.querySelector('input').selectionStart
             },
-            atUser(i) {
+            appendMsg(regexp, data){
                 let preMsg = this.message.slice(0, this.lastCursor)
-                    .replace(/@([^\s]*?)$/, 
-                        '@' + this.atList[i].userName + ' ');
-                this.message = preMsg + this.message.slice(this.lastCursor)
-                this.lastCursor = preMsg.length;
-                this.atList = [];
-                this.currentAt = -1;
+                    .replace(regexp, data);
+                this.message = preMsg + this.message.slice(this.lastCursor);
                 this.$nextTick(() => {
                     this.$refs['message'].focus();
-                    this.$refs['message'].$el.querySelector('input').setSelectionRange(this.lastCursor, this.lastCursor)
+                    this.$refs['message'].$el.querySelector('input').setSelectionRange(preMsg.length, preMsg.length)
+                    this.emojiList = this.atList = []
                 });
             },
-            selAtUser(i) {
-                let len = this.atList.length;
-                this.currentAt = (this.currentAt + i) % len;
+            atMsg(item) {
+                this.message += `@${item.userName} `;
+                this.$refs['message'].focus();
+            },
+            atUser(i) {
+                let data = '@' + this.atList[i].userName + ' ';
+                this.atList = [];
+                this.currentSel = -1;
+                this.appendMsg(/@([^\s]*?)$/, data)
+            },
+            selList(i) {
+                let len = this.atList.length || this.emojiList.length;
+                if (len == 0) return;
+                this.currentSel = (this.currentSel + i) % len;
+                this.$refs['message'].$el.querySelector('input').setSelectionRange(this.lastCursor, this.lastCursor)
+            },
+            async getAt(name) {
+                if (!name || name.length < 2) return;
+                console.log(name)
+                let rsp = await ipc.sendipcSync('pwl-at', name);
+                if (!rsp) return;
+                rsp = rsp.data;
+                if (rsp.code != 0) {
+                    this.$Message.error(rsp.msg);
+                    return;
+                }
+                this.atList = rsp.data;
+                this.currentSel = -1;
+                this.lastCursor = this.msgCursor();
+            },
+            emojiSel(i) {
+                let data = emoji.get(this.emojiList[i].name);
+                this.emojiList = [];
+                this.currentSel = -1;
+                this.appendMsg(/:([^:]+?)$/, data)
+            },
+            getEmoji(name) {
+                if (!name || name.length < 1) return;
+                this.emojiList = emoji.search(name);
+                this.currentSel = -1;
+                this.lastCursor = this.msgCursor();
             },
             menuShow(item, ev) {
                 let ele = this.$refs[`msg-${item.oId}`][0];
@@ -284,23 +337,7 @@
                 }
                 console.log(rsp);
             },
-            atMsg(item) {
-                this.message += `@${item.userName} `;
-                this.$refs['message'].focus();
-            },
-            async getAt(name) {
-                if (!name || name.length < 2) return;
-                let rsp = await ipc.sendipcSync('pwl-at', name);
-                if (!rsp) return;
-                rsp = rsp.data;
-                if (rsp.code != 0) {
-                    this.$Message.error(rsp.msg);
-                    return;
-                }
-                this.atList = rsp.data;
-                this.currentAt = -1;
-                this.lastCursor = this.msgCursor();
-            },
+
             formatContent(content) {
                 return content.replace(/(<a )/g, '$1target="_blank" ').replace(/(<img )/g, '$1data-action="preview" ');
             },
@@ -369,21 +406,29 @@
                 }
                 
             },
-            async wsPush() {
-                if (this.currentAt >= 0) {
-                    this.atUser(this.currentAt);
+            async wsPush(ev, retry) {
+                if (this.currentSel >= 0) {
+                    if (this.atList.length > 0) this.atUser(this.currentSel);
+                    if (this.emojiList.length > 0) this.emojiSel(this.currentSel);
                     return;
                 }
                 if (!this.message) return;
                 let rsp = await ipc.sendipcSync('pwl-push', this.message);
                 if (!rsp) return;
                 rsp = rsp.data;
+                if (rsp.code == 401 && !retry && await this.$root.relogin()) {
+                    await this.init();
+                    if(await this.wsPush(ev, true))
+                        this.$Message.warn('服务器失联，已重新登录.');
+                    return true;
+                }
                 if (rsp.code != 0) {
                     this.$Message.error(rsp.msg);
-                    return;
+                    return false;
                 }
                 console.log(rsp);
                 this.message = '';
+                return true;
             },
             wsMessage(e) {
                 console.log("onmessage");

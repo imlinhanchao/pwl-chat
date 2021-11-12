@@ -157,6 +157,8 @@
                             return;
                         }
                         localStorage.setItem('token', rsp.Key);
+                        localStorage.setItem('username', this.login.username);
+                        localStorage.setItem('passwd', this.login.passwd);
                         this.$router.push('/chat');
                     } catch (err) {
                         this.$Message.error(err.message);

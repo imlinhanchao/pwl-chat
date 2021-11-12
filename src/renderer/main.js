@@ -52,7 +52,24 @@ new Vue({
   },
   methods: {
     sendipc: ipc.sendipc,
-    sendipcSync: ipc.sendipcSync
+    sendipcSync: ipc.sendipcSync,
+    async relogin() {
+      let login = {
+        username: localStorage.getItem('username'),
+        passwd: localStorage.getItem('passwd')
+      };
+      let rsp = await ipc.sendipcSync('pwl-login', login);
+      if (!rsp) return false;
+      rsp = rsp.data;
+      if (rsp.code != 0) {
+          this.$Message.error(rsp.msg);
+          return false;
+      }
+      localStorage.setItem('token', rsp.Key);
+      this.token = rsp.Key;
+      ipcRenderer.send('pwl-token', { data: this.$root.token });
+      return true;
+    }
   },
   computed: {
     title() {
