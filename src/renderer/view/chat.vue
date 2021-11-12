@@ -124,21 +124,25 @@
 }
 </style>
 <style lang="less">
-.msg-content {
-    ul, ol {
-        list-style-position: inside;
-    }
-}
 .msg-contain img.emoji {
     cursor: auto;
-    max-width: 20px;
+    max-width: 40px;
     vertical-align: middle;
+    background: transparent;
 }
 .msg-contain img {
     max-height: 60vh;
     max-width: 40vw;
     cursor: pointer;
     background: #FFF;
+}
+.msg-content {
+    ul, ol {
+        list-style-position: inside;
+    }
+    img.emoji {
+        max-width: 20px;
+    }
 }
 </style>
 
@@ -180,9 +184,9 @@
                             <div class="msg-menu-item" v-if="item.userName != current.userName" @click="atMsg(item)">@{{item.userName}}</div>
                         </div>
                         <div class="msg-contain">
-                            <div class="arrow" v-if="item.content.match(/>[^<]+?</g)"/>
-                            <div class="msg-content" v-html="formatContent(item.content)" v-if="item.content.match(/>[^<]+?</g)"/>
-                            <span class="msg-img" v-if="!item.content.match(/>[^<]+?</g)" v-html="formatContent(item.content)"></span>
+                            <div class="arrow" v-if="item.content.replace(/\n/g, '').match(/>[^<]+?</g)"/>
+                            <div class="msg-content" v-html="formatContent(item.content)" v-if="item.content.replace(/\n/g, '').match(/>[^<]+?</g)"/>
+                            <span class="msg-img" v-if="!item.content.replace(/\n/g, '').match(/>[^<]+?</g)" v-html="formatContent(item.content)"></span>
                         </div>
                     </div>
                 </div>
