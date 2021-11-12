@@ -389,6 +389,7 @@
             },
             wsInit() {
                 let that = this;
+                if (this.rws != null) this.rws.close();
                 this.rws = new ReconnectingWebSocket(`wss://pwl.icu/chat-room-channel?apiKey=${this.$root.token}`);
                 this.rws.reconnectInterval = 10000
 
