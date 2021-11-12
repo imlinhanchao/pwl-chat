@@ -41,6 +41,8 @@ let create = (app, win) => {
         music.play(sound)
         count ++;
         tray.setToolTip(`摸鱼派聊天室-你有${count}条新消息`)
+        win.main.flashFrame(true);
+        
         if (timer != null) return;
 
         timer = setInterval(() => {
