@@ -273,7 +273,8 @@
             },
             appendMsg(regexp, data){
                 let preMsg = this.message.slice(0, this.lastCursor)
-                    .replace(regexp, data);
+                if(regexp) preMsg = preMsg.replace(regexp, data);
+                else preMsg += data;
                 this.message = preMsg + this.message.slice(this.lastCursor);
                 this.$nextTick(() => {
                     this.$refs['message'].focus();
@@ -282,8 +283,8 @@
                 });
             },
             atMsg(item) {
-                this.message += `@${item.userName} `;
-                this.$refs['message'].focus();
+                this.lastCursor = this.msgCursor();
+                this.appendMsg(null, `@${item.userName} `)
             },
             atUser(i) {
                 let data = '@' + this.atList[i].userName + ' ';
