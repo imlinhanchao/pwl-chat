@@ -60,6 +60,10 @@
         background-color: #515a6e;
         color: #F6F8FA;
     }
+    .msg-user {
+        text-align: right;
+        margin-right: 1em;
+    }
 }
 .chat-content {
     height: calc(100vh - 100px);
