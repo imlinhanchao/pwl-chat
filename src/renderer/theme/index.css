@@ -102,16 +102,6 @@ i.fa-help {
 .drag {
     -webkit-app-region: drag
 }
-.msg-content img.emoji {
-    cursor: auto;
-    max-width: 20px;
-    vertical-align: middle;
-}
-.msg-content img {
-    max-height: 60vh;
-    max-width: 40vw;
-    cursor: pointer;
-}
 
 .ivu-alert-info .ivu-alert-icon, .ivu-anchor-link-active>.ivu-anchor-link-title {
     color: #2d8cf0;

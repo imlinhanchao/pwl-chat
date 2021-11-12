@@ -27,6 +27,9 @@
 .msg-contain{
     display: flex;
     flex-direction: row;
+    .msg-img {
+        padding: 10px;
+    }
 }
 
 .arrow{
@@ -126,6 +129,16 @@
         list-style-position: inside;
     }
 }
+.msg-contain img.emoji {
+    cursor: auto;
+    max-width: 20px;
+    vertical-align: middle;
+}
+.msg-contain img {
+    max-height: 60vh;
+    max-width: 40vw;
+    cursor: pointer;
+}
 </style>
 
 <template>
@@ -155,7 +168,7 @@
             <div class="at-item" @click="atUser(i)" :class="{ 'current-at':  currentAt == i}" v-for="(u, i) in atList"><Avatar :src="u.userAvatarURL"/> {{u.userName}}</div>
         </div>
         </section>
-        <section class="chat-content">
+        <section class="chat-content" ref="chat-content">
             <div v-for="item in content">
                 <div class="msg-item" :class="{'msg-current': item.userName == current.userName}">
                     <a target="_blank" :href="`https://pwl.icu/member/${item.userName}`"><Avatar class="msg-avatar" :src="item.userAvatarURL" /></a>
@@ -166,8 +179,9 @@
                             <div class="msg-menu-item" v-if="item.userName != current.userName" @click="atMsg(item)">@{{item.userName}}</div>
                         </div>
                         <div class="msg-contain">
-                             <div class="arrow" />
-                            <div class="msg-content" v-html="formatContent(item.content)"/>
+                            <div class="arrow" v-if="item.content.match(/>[^<]+?</g)"/>
+                            <div class="msg-content" v-html="formatContent(item.content)" v-if="item.content.match(/>[^<]+?</g)"/>
+                            <span class="msg-img" v-if="!item.content.match(/>[^<]+?</g)" v-html="formatContent(item.content)"></span>
                         </div>
                     </div>
                 </div>
@@ -251,7 +265,7 @@
                 let ele = this.$refs[`msg-${item.oId}`][0];
                 let pos = {
                     x: ev.clientX - ele.offsetLeft,
-                    y: ev.clientY - ele.offsetTop
+                    y: ev.clientY - ele.offsetTop + this.$refs['chat-content'].scrollTop
                 }
                 this.menu = { [item.oId]: pos };
             },
