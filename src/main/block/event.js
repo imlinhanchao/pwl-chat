@@ -90,6 +90,16 @@ let create = (app, win) => {
         if(argv.callback) event.sender.send('pwl-history-callback-' + argv.callback, { data, argv: argv.data, error })
     })
 
+    ipcMain.on('pwl-raw', async (event, argv) => {
+        let data, error;
+        try {
+            data = await pwl.raw(argv.data);
+        } catch (err) {
+            error = err;
+        }
+        if(argv.callback) event.sender.send('pwl-raw-callback-' + argv.callback, { data, argv: argv.data, error })
+    })
+
     ipcMain.on('pwl-img', (event, argv) => {
         try {
             let size = argv.size;

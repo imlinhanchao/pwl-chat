@@ -11,9 +11,12 @@ header {
         font-size: 1em;
         padding: 0 5px;
         font-weight: normal;
+        user-select: none;
+        -webkit-app-region: drag;
         img {
             height: 1.5em;
             vertical-align: middle;
+            -webkit-app-region: drag;
         }
         span {
             vertical-align: middle;
@@ -22,9 +25,11 @@ header {
             white-space:nowrap;
             max-width: calc(100vw - 210px);
             display: inline-block;
+            -webkit-app-region: drag;
         }
     }
     .control {
+        -webkit-app-region: no-drag;
         i {
             font-size: 1.5em;
         }
@@ -47,6 +52,9 @@ header {
     border: 2px dashed #aca49a;
     vertical-align: middle;
 }
+.content {
+    -webkit-app-region: no-drag;
+}
 </style>
 <style lang="less">
 .control {
@@ -68,7 +76,7 @@ header {
             <Button type="text" @click="handleClose"><Icon custom="fa fa-times"></Icon></Button>
         </span>
     </header>
-    <Content>
+    <Content class="content">
         <router-view />
     </Content>
 </div>

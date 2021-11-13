@@ -122,6 +122,19 @@ class PWL {
         }
     }
 
+    async raw(oId) {
+        let rsp;
+        try {
+            rsp = await this.request({
+                url: `cr/raw/${oId}`,
+            })
+
+            return rsp.data.replace(/<!--.*?-->/g, '')
+        } catch (e) {
+            throw(e)
+        }
+    }
+
     async request(opt) {
         let {
             url,

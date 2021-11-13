@@ -66,7 +66,6 @@
     }
 }
 .chat-content {
-    height: calc(100vh - 100px);
     overflow: auto;
     margin-top: 5px;
 }
@@ -117,6 +116,7 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    z-index:50;
     .msg-menu-item {
         padding: 5px 10px;
         &:hover {
@@ -135,6 +135,11 @@
 .hidden {
     visibility: hidden;
     position: absolute;
+}
+.content {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 55px);
 }
 </style>
 <style lang="less">
@@ -158,49 +163,111 @@
         max-width: 20px;
     }
 }
+.msg-contain, .msg-quote-tip {
+    h1,h2 {
+        padding-bottom: .3em;
+        border-bottom: 1px solid #eaecef
+    }
+    
+    hr {
+        background-color: #eaecef
+    }
+    
+    blockquote {
+        color: #6a737d;
+        border-left: .25em solid #eaecef;
+        padding-left: 5px;
+    }
+    
+    iframe {
+        border: 1px solid #d1d5da
+    }
+    
+    table tr {
+        border-top: 1px solid #c6cbd1;
+        background-color: #fafbfc
+    }
+    
+    table td,.msg-contain table th {
+        border: 1px solid #dfe2e5
+    }
+    
+    table tbody tr:nth-child(2n) {
+        background-color: #fff
+    }
+    
+    code:not(.hljs):not(.highlight-chroma) {
+        background-color: rgba(27,31,35,.05)
+    }
+    
+    kbd {
+        color: #24292e;
+        background-color: #fafbfc;
+        border: 1px solid #d1d5da;
+        box-shadow: inset 0 -1px 0 #d1d5da
+    }
+}
+.ivu-tooltip-popper {
+    line-height: 1.2;
+    blockquote {
+        line-height: .8;
+    }
+}
+.msg-quote-tip, .msg-current
+{
+    blockquote {
+        color: #c6cbd1;
+    }
+}
 </style>
 
 <template>
 <article class="layout no-drag">
-    <section class="hidden">
-        <span style="font-size:12px">{{message}}</span>
-    </section>    
-    <section @click="menu = {}">
+    <section @click="menu = {}" class="content">
         <section class="chat-form">
-        <span class="logout" @click="logout"><Avatar :src="current.userAvatarURL" title="点击注销"/></span>
-        <Input ref="message"
-            type="text"
-            v-model="message"
-            placeholder="简单聊聊"
-            @on-keyup.enter="wsPush"
-            @on-keyup.up="selList(-1)"
-            @on-keyup.down="selList(1)"
-            @on-keyup.left="selList(-1)"
-            @on-keyup.right="selList(1)"
-        >
-            <Button
-                slot="append"
-                icon="md-send"
-                @click="wsPush"
-                style="box-shadow:none;"
-            ></Button>
-        </Input>
-        <section class="at-list" v-if="atList.length">
-            <div class="at-item" @click="atUser(i)" :class="{ 'current-at':  currentSel == i}" v-for="(u, i) in atList"><Avatar :src="u.userAvatarURL"/> {{u.userName}}</div>
+            <span class="logout" @click="logout"><Avatar :src="current.userAvatarURL" title="点击注销"/></span>
+            <Input ref="message"
+                type="text"
+                v-model="message"
+                placeholder="简单聊聊"
+                @on-keyup.enter="wsPush"
+                @on-keyup.up="selList(-1)"
+                @on-keyup.down="selList(1)"
+                @on-keyup.left="selList(-1)"
+                @on-keyup.right="selList(1)"
+            >
+                <Button
+                    slot="append"
+                    icon="md-send"
+                    @click="wsPush"
+                    style="box-shadow:none;"
+                ></Button>
+            </Input>
+            <section class="at-list" v-if="atList.length">
+                <div class="at-item" @click="atUser(i)" :class="{ 'current-at':  currentSel == i}" v-for="(u, i) in atList"><Avatar :src="u.userAvatarURL"/> {{u.userName}}</div>
+            </section>
+            <section class="emoji-list" v-if="emojiList.length">
+                <div class="emoji-item" @click="emojiSel(i)" :class="{ 'current-at':  currentSel == i}" v-for="(u, i) in emojiList"><img :src="u.url"/></div>
+            </section>
         </section>
-        <section class="emoji-list" v-if="emojiList.length">
-            <div class="emoji-item" @click="emojiSel(i)" :class="{ 'current-at':  currentSel == i}" v-for="(u, i) in emojiList"><img :src="u.url"/></div>
-        </section>
+        <section>
+            <Tooltip placement="bottom-start" size="large" v-if="quote" :max-width="innerWidth * .8">
+                <Tag closable @on-close="quote=null" v-if="quote">引用：@{{quote.userName}}</Tag>
+                <div slot="content">
+                    <div class="msg-quote-tip" v-html="quote.content"></div>
+                </div>
+            </Tooltip>
         </section>
         <section class="chat-content" ref="chat-content">
             <div v-for="item in content">
                 <div class="msg-item" :class="{'msg-current': item.userName == current.userName}">
                     <a target="_blank" :href="`https://pwl.icu/member/${item.userName}`"><Avatar class="msg-avatar" :src="item.userAvatarURL" /></a>
-                    <div :ref="`msg-${item.oId}`" class="msg-item-contain" @contextmenu="menuShow(item, $event)">
+                    <div :ref="`msg-${item.oId}`" :data-id="item.oId" class="msg-item-contain" @contextmenu="menuShow(item, $event)">
                         <div class="msg-user" :title="item.userNickname">{{item.userName}}</div>
                         <div class="msg-menu" v-if="menu[item.oId]" :style="{ top: menu[item.oId].y + 'px', left: menu[item.oId].x + 'px' }">
                             <div class="msg-menu-item" v-if="item.userName == current.userName" @click="revokeMsg(item.oId)">撤回</div>
                             <div class="msg-menu-item" v-if="item.userName != current.userName" @click="atMsg(item)">@{{item.userName}}</div>
+                            <div class="msg-menu-item" @click="quote = item">引用</div>
                         </div>
                         <div class="msg-contain">
                             <div class="arrow" v-if="item.content.replace(/\n/g, '').match(/>[^<]+?</g)"/>
@@ -249,7 +316,8 @@
                 currentSel: -1,
                 menu: {},
                 loading: false,
-                lastCursor: 0
+                lastCursor: 0,
+                quote: null
             }
         },
         watch: {
@@ -260,12 +328,18 @@
                 if(matAt) this.getAt(matAt[1])
                 else if(matEmoji) this.getEmoji(matEmoji[1])
                 else this.emojiList = this.atList = []
+            },
+            quote (val) {
+                if (val == null) this.message =  this.message.replace(/^并说：/, '');
+                else this.message = '并说：' + this.message
             }
         },
         filters: {
         },
         computed: {
-            
+            innerWidth() {
+                return window.innerWidth
+            }
         },
         methods: {
             msgCursor() {
@@ -419,6 +493,14 @@
                     return;
                 }
                 if (!this.message) return;
+                if (this.quote) {
+                    let rsp = await ipc.sendipcSync('pwl-raw', this.quote.oId);
+                    let raw = rsp.data;
+                    raw = raw.split('\n').map(r => `>${r}`).join('\n').trim();
+                    let at = this.quote.userName != this.current.userName ? `@${this.quote.userName} ` : ''
+                    this.message = `${at}引用：\n\n${raw}\n\n${this.message}`;
+                    this.quote = null;
+                }
                 let rsp = await ipc.sendipcSync('pwl-push', this.message);
                 if (!rsp) return;
                 rsp = rsp.data;
