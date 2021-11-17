@@ -1,7 +1,11 @@
-const emojis = {
+let emojis = {
     "doge": {
         "type": "vditor",
         "url": "https://cdn.jsdelivr.net/npm/vditor@3.8.7/dist/images/emoji/doge.png"
+    },
+    "trollface": {
+        "type": "vditor",
+        "url": "https://cdn.jsdelivr.net/npm/vditor@3.8.7/dist/images/emoji/trollface.png"
     },
     "huaji": {
         "type": "vditor",
@@ -381,7 +385,7 @@ const emojis = {
     },
     "+1": {
         "type": "emoji",
-        "url": "https://pwl.icu/emoji/graphics/+1.png"
+        "url": "https://pwl.icu/emoji/graphics/%2B1.png"
     },
     "thumbsup": {
         "type": "emoji",
@@ -714,12 +718,12 @@ const emojis = {
     "thought_balloon": {
         "type": "emoji",
         "url": "https://pwl.icu/emoji/graphics/thought_balloon.png"
-    },
-    "trollface": {
-        "type": "vditor",
-        "url": "https://cdn.jsdelivr.net/npm/vditor@3.8.7/dist/images/emoji/trollface.png"
     }
 }
+
+let faces = JSON.parse(localStorage.getItem('faces')) || {};
+faces['^faces'] = faces['^faces'] || { type: 'urls', url: []}
+emojis = Object.assign(emojis, faces);
 
 const emojiNames = Object.keys(emojis);
 
@@ -728,9 +732,33 @@ export default {
         return emojiNames.filter(e => e.startsWith(name)).slice(0, 5).map(e => ({ name: e, url: emojis[e].url }));
     },
     get (name) {
-        return `:${name}:`
+        return emojis[name] ? `:${name}:` : `![](${name})`;
     },
     getUrl (name) {
         return emoji[name].url;
+    },
+    push (name, url) {
+        if (!name && faces['^faces'].url.indexOf(url) < 0) {
+            faces['^faces'].url.push(url);
+            emojis['^faces'].url = faces['^faces'].url;
+            return true;
+        }
+        else if(!name) return false;
+        if (emojiNames.indexOf(name) >= 0) return false;
+        emojis[name] = faces[name] = {
+            type: 'face',
+            url
+        };
+        emojiNames.push(name);
+        return true;
+    },
+    save () {
+        localStorage.setItem('faces', JSON.stringify(faces));
+    },
+    get urls () {
+        return emojis['^faces'].url;
+    },
+    list (type) {
+        return emojiNames.filter(e => emojis[e].type == type).map(e => ({ name: e, url: emojis[e].url }));
     }
 }

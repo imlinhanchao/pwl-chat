@@ -106,7 +106,7 @@
     cursor: pointer;
     margin-right: 5px;
 }
-.msg-menu {
+.msg-menu, .face-menu {
     position: absolute;
     background: #FFF;
     box-shadow: 1px 1px 3px #515a6e;
@@ -117,8 +117,9 @@
     flex-direction: column;
     overflow: hidden;
     z-index:50;
-    .msg-menu-item {
+    .msg-menu-item, .face-menu-item {
         padding: 5px 10px;
+        word-break: keep-all;
         &:hover {
             background: #dcdee2;
         }
@@ -141,29 +142,128 @@
     flex-direction: column;
     height: calc(100vh - 55px);
 }
+.msg-control {
+    float: right;
+    padding: 0 8px;
+    font-size: 1.2em;
+}
+.emoji-tab {
+    position: absolute;
+    z-index: 60;
+    width: 320px;
+    top: 40px;
+    right: 40px;
+    margin: auto;
+    .emoji-close {
+        position: absolute;
+        top: 2px;
+        left: 10px;
+        color:#131415;
+        text-shadow: 0 0 1px #c6cbd1;
+        cursor: pointer;
+        z-index: 70;
+    }
+    .face-list {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        overflow: auto;
+        max-height: 350px;
+        &.face-diy {
+            .face-item {
+                margin: 2px;
+                width: 59px;
+                height: 59px;
+                overflow: hidden;
+                background-size: cover;
+                .face-space {
+                    display: inline-block;
+                    width: 59px;
+                    height: 59px;
+                }
+                img {
+                    max-width: 100%;
+                    max-height: 100%;
+                    width: auto;
+                }
+            }
+            .msg-quote-tip {
+                img {
+                    width: auto;
+                    max-width: 150px;
+                    max-height: 150px;
+                }
+            }
+        }
+        .face-item {
+            width: 10%;
+            padding: 5px;
+            cursor: pointer;
+            img {
+                width: 100%;
+            }
+        }
+        .face-add {
+            width: 59px;
+            height: 59px;
+            cursor: pointer;
+            line-height: 59px;
+            text-align: center;
+            margin: 2px;
+            border: 1px dashed #6a737d
+        }
+    }
+}
+.msg-control-list {
+    position: relative;
+    padding-left:36px;
+}
 </style>
 <style lang="less">
-.msg-contain img.emoji {
-    cursor: auto;
-    max-width: 40px;
-    vertical-align: middle;
-    background: transparent;
+.ivu-tabs.ivu-tabs-card>.ivu-tabs-bar .ivu-tabs-tab {
+    background: #515a6e;
+    color: #232425
 }
-.msg-contain img {
-    max-height: 60vh;
-    max-width: 40vw;
-    cursor: pointer;
-    background: #FFF;
+.ivu-tabs.ivu-tabs-card>.ivu-tabs-bar .ivu-tabs-tab-active {
+    background: #131415;
+    color: #6a737d
 }
-.msg-content {
+.ivu-tabs-nav {
+    float: right;
+    margin-right: 5px;
+}
+.ivu-tabs-bar {
+    margin-bottom: 0;
+    border: 0;
+}
+.ivu-tabs-tabpane {
+    overflow: hidden;
+    border-radius: 10px;
+    background: #131415;
+    border: 1px solid #d1d5da;
+    border-top: 0;
+}
+.msg-contain, .msg-quote-tip {
+    img {
+        max-height: 60vh;
+        max-width: 40vw;
+        cursor: pointer;
+        background: #FFF;
+    }
     ul, ol {
         list-style-position: inside;
     }
+    .msg-img {
+        img.emoji {
+            max-width: 40px;
+        }
+    }
     img.emoji {
         max-width: 20px;
+        cursor: auto;
+        vertical-align: middle;
+        background: transparent;
     }
-}
-.msg-contain, .msg-quote-tip {
     h1,h2 {
         padding-bottom: .3em;
         border-bottom: 1px solid #eaecef
@@ -210,8 +310,13 @@
 .ivu-tooltip-popper {
     line-height: 1.2;
     blockquote {
-        line-height: .8;
+        line-height: 1;
     }
+}
+.ivu-tag {
+    height: 32px;
+    line-height: 32px;
+    padding: 0 12px;
 }
 .msg-quote-tip, .msg-current
 {
@@ -250,13 +355,53 @@
                 <div class="emoji-item" @click="emojiSel(i)" :class="{ 'current-at':  currentSel == i}" v-for="(u, i) in emojiList"><img :src="u.url"/></div>
             </section>
         </section>
-        <section>
-            <Tooltip placement="bottom-start" size="large" v-if="quote" :max-width="innerWidth * .8">
-                <Tag closable @on-close="quote=null" v-if="quote">引用：@{{quote.userName}}</Tag>
+        <section class="msg-control-list">
+            <input type="file" name="images" accept="image/*" ref="file" v-show="false" @change="uploadImg">
+            <Button type="text" class="msg-image msg-control" @click="$refs['file'].click()"><Icon custom="fa fa-picture-o"/></Button>
+            <Button type="text" class="msg-face msg-control" @click="emojiForm = !emojiForm"><Icon custom="fa fa-smile-o"/></Button>
+            <Tooltip placement="bottom-start" v-if="quote" :max-width="innerWidth * .8">
+                <Tag closable @on-close="quote=null" color="success" v-if="quote">引用：@{{quote.userName}}</Tag>
                 <div slot="content">
                     <div class="msg-quote-tip" v-html="quote.content"></div>
                 </div>
             </Tooltip>
+            <section class="emoji-tab" v-if="emojiForm">
+                <div class="emoji-close" @click="emojiForm = false"><Icon custom="fa fa-times" /></div>
+                <Tabs value="emoji" type="card">
+                    <TabPane label="系统表情" name="emoji">
+                        <article class="face-list">
+                            <section class="face-item" v-for="e in emoji.list('vditor')" :title="e.name" @click="sendFace(emoji.get(e.name))">
+                                <img :src="e.url" :alt="e.name">
+                            </section>
+                            <section class="face-item" v-for="e in emoji.list('emoji')" :title="e.name" @click="sendFace(emoji.get(e.name))">
+                                <img :src="e.url" :alt="e.name">
+                            </section>
+                        </article>
+                    </TabPane>
+                    <TabPane label="自定义表情" name="faces">
+                        <article class="face-list face-diy">
+                            <section :ref="`face-${i}`" @contextmenu="faceMenuShow(i, $event)" 
+                                class="face-item" v-for="(u, i) in faces" 
+                                :style="{ backgroundImage: `url(${u})`}" 
+                                @click="sendFace(emoji.get(u))">
+                                <div class="face-menu" v-if="faceMenu[i]" :style="{ top: faceMenu[i].y + 'px', left: faceMenu[i].x + 'px' }">
+                                    <div class="face-menu-item" @click="removeFace(i)">删除</div>
+                                </div>
+                                <Tooltip :placement="i % 4 < 3 ? 'bottom-start' : 'bottom-end'" :transfer="true">
+                                    <span class="face-space"></span>
+                                    <div class="msg-quote-tip" slot="content">
+                                        <img :src="u">
+                                    </div>
+                                </Tooltip>
+                            </section>
+                            <section class="face-add" @click="$refs['facefile'].click()">
+                                <Icon custom="fa fa-plus" />
+                                <input type="file" name="images" accept="image/*" ref="facefile" v-show="false" @change="uploadFace">
+                            </section>
+                        </article>
+                    </TabPane>
+                </Tabs>
+            </section>
         </section>
         <section class="chat-content" ref="chat-content">
             <div v-for="item in content">
@@ -264,9 +409,11 @@
                     <a target="_blank" :href="`https://pwl.icu/member/${item.userName}`"><Avatar class="msg-avatar" :src="item.userAvatarURL" /></a>
                     <div :ref="`msg-${item.oId}`" :data-id="item.oId" class="msg-item-contain" @contextmenu="menuShow(item, $event)">
                         <div class="msg-user" :title="item.userNickname">{{item.userName}}</div>
-                        <div class="msg-menu" v-if="menu[item.oId]" :style="{ top: menu[item.oId].y + 'px', left: menu[item.oId].x + 'px' }">
+                        <div class="msg-menu" :ref="`msg-menu-${item.oId}`" v-if="menu[item.oId]" :style="{ top: menu[item.oId].y + 'px', left: menu[item.oId].x + 'px' }">
                             <div class="msg-menu-item" v-if="item.userName == current.userName" @click="revokeMsg(item.oId)">撤回</div>
                             <div class="msg-menu-item" v-if="item.userName != current.userName" @click="atMsg(item)">@{{item.userName}}</div>
+                            <div class="msg-menu-item" v-if="hasFace(item.content)" @click="addFace">添加到表情包</div>
+                            <div class="msg-menu-item" v-if="isEmoji()" title="消息中插入该表情" @click="appendMsg(null, emojiCode(item.content))">{{emojiCode(item.content)}}</div>
                             <div class="msg-menu-item" @click="quote = item">引用</div>
                         </div>
                         <div class="msg-contain">
@@ -315,9 +462,13 @@
                 emojiList: [],
                 currentSel: -1,
                 menu: {},
+                faceMenu: {},
                 loading: false,
                 lastCursor: 0,
-                quote: null
+                quote: null,
+                emojiForm: false,
+                menuTarget: null,
+                faces: emoji.urls
             }
         },
         watch: {
@@ -331,7 +482,7 @@
             },
             quote (val) {
                 if (val == null) this.message =  this.message.replace(/^并说：/, '');
-                else this.message = '并说：' + this.message
+                else if(!this.message.startsWith('并说：')) this.message = '并说：' + this.message;
             }
         },
         filters: {
@@ -339,9 +490,76 @@
         computed: {
             innerWidth() {
                 return window.innerWidth
+            },
+            emoji() {
+                return emoji;
             }
         },
         methods: {
+            isEmoji() {
+                return (this.menuTarget || { nodeName: '' }).nodeName.toLowerCase() == 'img'
+                && this.menuTarget.className == 'emoji';
+            },
+            emojiCode(content) {
+                return `:${content.match(/\/([^\/.]*?)(.gif|.png)/)[1]}:`
+            },
+            hasFace(content) {
+                return content.match(/<img/) != null 
+                && (this.menuTarget || { nodeName: '' }).nodeName.toLowerCase() == 'img'
+                && this.menuTarget.className != 'emoji'
+            },
+            addFace(item) {
+                if(emoji.push(null, this.menuTarget.src)) this.$Message.success('添加成功！');
+                else this.$Message.warning('表情已存在');
+                emoji.save();
+            },
+            sendFace(face) {
+                this.appendMsg(null, face);
+                this.emojiForm = false;
+            },
+            async uploadFace(ev) {
+                let files = Array.from(ev.target.files)
+                let data = new FormData();
+                files.forEach(f => data.append('file[]', f));
+
+                let rsp = await fetch('https://pwl.icu/upload',
+                {
+                    body: data,
+                    method: "post"
+                });
+                if (!rsp) return;
+                rsp = await rsp.json();
+                if (rsp.code != 0) {
+                    this.$Message.error(rsp.msg);
+                    return;
+                }
+                let fileData = rsp.data.succMap;
+                for(let d in fileData) {
+                    this.faces.push(fileData[d]);
+                    emoji.push(null, fileData[d])
+                }
+                emoji.save();
+            },
+            async uploadImg(ev) {
+                let files = Array.from(ev.target.files)
+                let data = new FormData();
+                files.forEach(f => data.append('file[]', f));
+
+                let rsp = await fetch('https://pwl.icu/upload',
+                {
+                    body: data,
+                    method: "post"
+                });
+                if (!rsp) return;
+                rsp = await rsp.json();
+                if (rsp.code != 0) {
+                    this.$Message.error(rsp.msg);
+                    return;
+                }
+                let fileData = rsp.data.succMap;
+                let filename = Object.keys(fileData)[0]
+                this.appendMsg(null, `![${filename}](${fileData[filename]})`); 
+            },
             msgCursor() {
                 return this.$refs['message'].$el.querySelector('input').selectionStart
             },
@@ -399,12 +617,23 @@
                 this.lastCursor = this.msgCursor();
             },
             menuShow(item, ev) {
+                this.menuTarget = ev.target;
+                console.dir(this.menuTarget)
                 let ele = this.$refs[`msg-${item.oId}`][0];
                 let pos = {
                     x: ev.clientX - ele.offsetLeft,
                     y: ev.clientY - ele.offsetTop + this.$refs['chat-content'].scrollTop
                 }
                 this.menu = { [item.oId]: pos };
+                this.lastCursor = this.msgCursor();
+            },
+            faceMenuShow(item, ev) {
+                let ele = this.$refs[`face-${item}`][0];
+                let pos = {
+                    x: ev.clientX - ele.offsetLeft,
+                    y: ev.clientY - ele.offsetTop
+                }
+                // this.faceMenu = { [item]: pos };
             },
             async revokeMsg(id) {
                 let rsp = await ipc.sendipcSync('pwl-revoke', id);
@@ -507,7 +736,7 @@
                 if (rsp.code == 401 && !retry && await this.$root.relogin()) {
                     await this.init();
                     if(await this.wsPush(ev, true))
-                        this.$Message.warn('服务器失联，已重新登录.');
+                        this.$Message.warning('服务器失联，已重新登录.');
                     return true;
                 }
                 if (rsp.code != 0) {

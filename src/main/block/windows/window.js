@@ -29,8 +29,9 @@ class Windows {
             resizable: resizable,
             skipTaskbar: skipbar,
             webPreferences: {
-                nodeIntegration: true
-            }
+                nodeIntegration: true,
+                webSecurity: false
+            },
         })
 
         this.window.setMenu(null);

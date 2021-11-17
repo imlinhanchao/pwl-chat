@@ -44,11 +44,10 @@ new Vue({
       }
       ipcRenderer.send('pwl-img', { url: img.src, size });
     });
-    
   },
   data: {
     host: '',
-    token: ''
+    token: '',
   },
   methods: {
     sendipc: ipc.sendipc,
