@@ -150,7 +150,7 @@
 .emoji-tab {
     position: absolute;
     z-index: 60;
-    width: 320px;
+    width: 322px;
     top: 40px;
     right: 40px;
     margin: auto;
