@@ -569,10 +569,10 @@
                                 <Icon custom="fa fa-plus" />
                                 <input type="file" name="images" accept="image/*" ref="facefile" v-show="false" @change="uploadFace">
                             </section>
-                            <section class="face-add" @click="downloadFace">
+                            <section class="face-add" @click="downloadFace" title="导出">
                                 <Icon custom="fa fa-download" />
                             </section>
-                            <section class="face-add" @click="uploadFaces">
+                            <section class="face-add" @click="uploadFaces" title="导入">
                                 <Icon custom="fa fa-upload" />
                             </section>
                         </article>
