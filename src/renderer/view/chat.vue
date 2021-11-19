@@ -826,7 +826,7 @@
                 this.$refs['message'].$el.querySelector('input').setSelectionRange(this.lastCursor, this.lastCursor)
             },
             async getAt(name) {
-                if (!name || name.length < 2) return;
+                if (!name) return;
                 console.log(name)
                 let rsp = await ipc.sendipcSync('pwl-at', name);
                 if (!rsp) return;
