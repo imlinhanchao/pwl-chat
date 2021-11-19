@@ -27,8 +27,20 @@
 .msg-contain{
     display: flex;
     flex-direction: row;
+    position: relative;
     .msg-img {
         padding: 10px;
+    }
+    .plus-one {
+        top: 0;
+        bottom: 0;
+        margin: auto;
+        right: -1.5em;
+        font-weight: bold;
+        color: #d23f31;
+        position: absolute;
+        height: 2em;
+        cursor: pointer;
     }
 }
 
@@ -63,6 +75,9 @@
     .msg-user {
         text-align: right;
         margin-right: 1em;
+    }
+    .plus-one {
+        left: -1.5em;
     }
 }
 .chat-content {
@@ -560,7 +575,7 @@
             </section>
         </section>
         <section class="chat-content" ref="chat-content">
-            <div v-for="item in content">
+            <div v-for="(item, i) in content">
                 <div class="msg-item" :class="{'msg-current': item.userName == current.userName}">
                     <a target="_blank" :href="`https://pwl.icu/member/${item.userName}`"><Avatar class="msg-avatar" :src="item.userAvatarURL" /></a>
                     <div :ref="`msg-${item.oId}`" :data-id="item.oId" class="msg-item-contain" @contextmenu="menuShow(item, $event)">
@@ -585,6 +600,7 @@
                             <div class="arrow" v-if="item.content.replace(/\n/g, '').match(/>[^<]+?</g)"/>
                             <div class="msg-content" v-html="formatContent(item.content)" v-if="item.content.replace(/\n/g, '').match(/>[^<]+?</g)"/>
                             <span class="msg-img" v-if="!item.content.replace(/\n/g, '').match(/>[^<]+?</g)" v-html="formatContent(item.content)"></span>
+                            <span class="plus-one" @click="followMsg(item)" v-if="i == 0 && item.content == content[1].content">+1</span>
                         </div>
                     </div>
                 </div>
@@ -949,6 +965,11 @@
                     console.log("onclose");
                 }
                 
+            },
+            async followMsg(item) {
+                let rsp = await ipc.sendipcSync('pwl-raw', item.oId);
+                let raw = rsp.data;
+                await this.wsSend(raw);
             },
             async wsPush(ev, retry) {
                 if (this.currentSel >= 0) {
