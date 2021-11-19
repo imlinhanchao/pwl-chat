@@ -36,7 +36,7 @@ let create = (app, win) => {
         win.show();
     })
     ipcMain.on('sys-msg', (event, arg) => {
-        if (win.isVisable() && win.isFocused() && win.main.isAlwaysOnTop()) return;
+        if (win.isVisable() && (win.isFocused() || win.main.isAlwaysOnTop())) return;
 
         music.play(sound)
         count ++;

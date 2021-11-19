@@ -549,7 +549,7 @@
                             </section>
                         </article>
                     </TabPane>
-                    <TabPane label="自定义表情" name="faces">
+                    <TabPane label="收藏表情" name="faces">
                         <article class="face-list face-diy">
                             <section :ref="`face-${i}`" @contextmenu="faceMenuShow(i, $event)" 
                                 class="face-item" v-for="(u, i) in faces" 
@@ -568,6 +568,12 @@
                             <section class="face-add" @click="$refs['facefile'].click()">
                                 <Icon custom="fa fa-plus" />
                                 <input type="file" name="images" accept="image/*" ref="facefile" v-show="false" @change="uploadFace">
+                            </section>
+                            <section class="face-add" @click="downloadFace">
+                                <Icon custom="fa fa-download" />
+                            </section>
+                            <section class="face-add" @click="uploadFaces">
+                                <Icon custom="fa fa-upload" />
                             </section>
                         </article>
                     </TabPane>
@@ -717,6 +723,16 @@
             clear (ev) {
                 this.menu = {};
                 this.redpacketData = null;
+            },
+            downloadFace() {
+                let data = emoji.urls.join('\n');
+                ipcRenderer.send('face-save', data);
+            },
+            async uploadFaces() {
+                let rsp = await ipc.sendipcSync('face-upload');
+                if (!rsp) return;
+                rsp = rsp.data;
+                rsp.forEach(u => emoji.push(null, u));
             },
             async sendRedpacket() {
                 if (this.redpacket.count <= 0) return;

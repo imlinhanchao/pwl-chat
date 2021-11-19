@@ -1,8 +1,9 @@
 import {
-    ipcMain,
+    ipcMain, dialog
 } from 'electron'
 import PWL from '../lib/pwl'
 import windows from './windows'
+import fs from 'fs'
 
 let create = (app, win) => {
     let openfile = null;
@@ -112,6 +113,41 @@ let create = (app, win) => {
         }
     })
 
+    ipcMain.on('face-upload', (event, argv) => {
+        try {
+            dialog.showOpenDialog({
+                title: '导出表情文件',
+                buttonLabel: '保存',
+                filters: [
+                    { name: '表情文件', extensions: ['txt'] },
+                ]
+            }, result => {
+                let filePath = result;
+                let data = fs.readFileSync(filePath[0]).toString();
+                data = data.split('\n').filter(d => d.startsWith('http'));
+                if(argv.callback) event.sender.send('face-upload-callback-' + argv.callback, { data })
+            })
+        } catch (err) {
+            console.error(err)
+        }
+    })
+
+    ipcMain.on('face-save', (event, argv) => {
+        try {
+            dialog.showSaveDialog({
+                title: '导入表情文件',
+                buttonLabel: '保存',
+                filters: [
+                    { name: '表情文件', extensions: ['txt'] },
+                ]
+            }, result => {
+                let filePath = result;
+                fs.writeFileSync(filePath, argv);
+            })
+        } catch (err) {
+            console.error(err)
+        }
+    })
 }
 
 export default {
