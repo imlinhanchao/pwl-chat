@@ -291,6 +291,12 @@
         color: #24292e;
         font-size: .8em;
     }
+    .redpacket-user {
+        width: calc(100% - 70px);
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
+    }
     .redpacket-money {
         color: #fee3aa;
     }
@@ -492,7 +498,7 @@
 
             <Button type="text" class="msg-image msg-control" @click="$refs['file'].click()" title="上传图片"><Icon custom="fa fa-picture-o"/></Button>
             <Button type="text" class="msg-face msg-control" @click="emojiForm = !emojiForm" title="发表情"><Icon custom="fa fa-smile-o"/></Button>
-            <Poptip title="发红包" placement="bottom" class="msg-control" >
+            <Poptip ref="redpacketForm" title="发红包" placement="bottom" class="msg-control" >
                 <Button type="text" class="msg-redpacket" title="发红包">
                     <svg class="redpacket-icon">
                         <use xlink:href="#redPacketIcon"></use>
@@ -515,7 +521,7 @@
                     <div class="msg-quote-tip" v-html="quote.content"></div>
                 </div>
             </Tooltip>
-            <section class="emoji-tab" v-if="emojiForm">
+            <section class="emoji-tab" v-show="emojiForm">
                 <div class="emoji-close" @click="emojiForm = false"><Icon custom="fa fa-times" /></div>
                 <Tabs value="emoji" type="card">
                     <TabPane label="内置表情" name="emoji">
@@ -692,9 +698,8 @@
             }
         },
         methods: {
-            clear () {
+            clear (ev) {
                 this.menu = {};
-                this.emojiForm = false;
                 this.redpacketData = null;
             },
             async sendRedpacket() {
@@ -702,6 +707,7 @@
                 this.redpacket.msg = this.redpacket.msg || '摸鱼者，事竟成！';
                 let message = `[redpacket]${JSON.stringify(this.redpacket)}[/redpacket]`
                 await this.wsSend(message);
+                this.$refs['redpacketForm'].handleClose();
             },
             async openRedpacket(item) {
                 let rsp = await fetch('https://pwl.icu/chat-room/red-packet/open',
