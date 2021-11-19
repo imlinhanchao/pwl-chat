@@ -53,11 +53,15 @@ a {
 /* 设置滚动条的样式 */
 ::-webkit-scrollbar {
     width: 5px;
-    height: 10px;
+    height: 5px;
 }
 /* 滚动条滑块 */
 ::-webkit-scrollbar-thumb {
     background: rgba(0, 0, 0, 0.39);
+}
+
+::-webkit-scrollbar-corner {
+    background-color: transparent;
 }
 
 .ivu-timeline-item-tail {

@@ -28,6 +28,7 @@
     display: flex;
     flex-direction: row;
     position: relative;
+    max-width: 80vw;
     .msg-img {
         padding: 10px;
     }
@@ -58,6 +59,8 @@
     padding: 8px 15px;
     color:#232425;
     word-break: break-word;
+    max-width: 100%;
+    overflow: auto;
 }
 .msg-current {
     flex-direction: row-reverse;
@@ -81,7 +84,7 @@
     }
 }
 .chat-content {
-    overflow: auto;
+    overflow: hidden auto;
     margin-top: 5px;
 }
 .chat-form {
@@ -448,6 +451,25 @@
     code:not(.hljs):not(.highlight-chroma) {
         background-color: rgba(27,31,35,.05)
     }
+
+    pre,code {
+        width: 100%;
+        max-height: 300px;
+        overflow: auto;
+    }
+
+    pre>code {
+        margin: 0;
+        font-size: 85%;
+        padding: 0.5em;
+        border-radius: 5px;
+        display: block;
+        overflow: auto;
+        white-space: pre;
+        font-family: mononoki,Consolas,"Liberation Mono",Menlo,Courier,monospace;
+        word-break: initial;
+        word-wrap: normal
+    }
     
     kbd {
         color: #24292e;
@@ -720,6 +742,9 @@
             }
         },
         methods: {
+            refreshHljs() {
+                this.$refs['chat-content'].$el.querySelectorAll('code')
+            },
             clear (ev) {
                 this.menu = {};
                 this.redpacketData = null;

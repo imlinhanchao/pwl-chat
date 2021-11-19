@@ -12,6 +12,7 @@ import iView from 'iview'
 import 'iview/dist/styles/iview.css'
 import './theme/index.css'
 import './theme/font-awesome.css'
+import './theme/highlight.css'
 import { ipcRenderer } from 'electron';
 
 Vue.use(iView)
