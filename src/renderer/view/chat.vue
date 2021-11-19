@@ -250,6 +250,102 @@
         }
     }
 }
+.msg-redpacket {
+    padding: 8px 0;
+    svg {
+        width: 25px;
+        height: 25px;
+    }
+}
+.redpacket {
+    position: absolute;
+    top: 50px;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    height: 400px;
+    width:  250px;
+    margin: auto;
+    border-radius: 10px;
+    color: #fee3aa;
+    padding: 10px;
+    overflow: hidden;
+    background: #f25745;
+    header {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+    }
+    .redpacket-bg {
+        border-radius: 300px;
+        width: 600px;
+        height: 600px;
+        border: 2px solid #f1ca74;
+        background: #f45e4d;
+        position: absolute;
+        top: -420px;
+        left: -175px;
+        z-index: 1;
+    }
+    .redpacket-msg {
+        color: #24292e;
+        font-size: .8em;
+    }
+    .redpacket-money {
+        color: #fee3aa;
+    }
+    .redpacket-content {
+        position: relative;
+        padding-top: 10px;
+        z-index: 2;
+        color: #000;
+        ul {
+            list-style: none;
+            padding: 0;
+            li {
+                margin: 10px 0;
+                display: flex;
+                justify-content: space-between;
+                position: relative;
+            }
+        }
+    }
+    .redpacket-current {
+        color: #fee3aa;
+        text-align: center;
+        font-size: 1.5em;
+        margin: 10px 0 30px;
+        &.redpacket-money {
+            font-size: 2em;
+            margin-top: 5px;
+        }
+    }
+    .redpacket-list {
+        height: 200px;
+        overflow: auto;
+        padding: 5px;
+    }
+    .redpacket-tip {
+        cursor: default;
+        position: absolute;
+        font-size: .6em;
+        padding: 0 5px;
+        left: 35px;
+        top: 2.5em;
+        border-radius: 5px;
+        background-color: #FFF;
+        border: 1px solid #D5D5D5;
+        font-weight: normal;
+        &.redpacket-max {
+            color: #fff;
+            background-color: #60b044;
+            border-color: #5ca941;
+        }
+        &.redpacket-zero {
+            color: #d23f31
+        }
+    }
+}
 </style>
 <style lang="less">
 .ivu-tabs.ivu-tabs-card>.ivu-tabs-bar .ivu-tabs-tab {
@@ -360,7 +456,7 @@
 
 <template>
 <article class="layout no-drag">
-    <section @click="menu = {}" class="content">
+    <section @click="clear" class="content">
         <symbol id="redPacketIcon" viewBox="0 0 1024 1024">
             <path d="M705.2 445.28C689.12 536.48 608.608 606.256 512 606.256c-91.232 0-171.728-64.4-187.84-150.272l-134.16-80.496V783.36c0 59.04 48.304 101.968 101.968 101.968h440.064c59.04 0 101.968-48.288 101.968-101.968V370.128l-128.8 75.136zM512 219.856c91.232 0 166.368 64.4 187.84 150.256l134.16-85.856v-48.304c0-59.04-48.304-101.968-101.968-101.968H291.968c-53.664 0-101.968 42.928-101.968 101.968v59.04l134.16 80.48c16.112-91.216 96.608-155.616 187.84-155.616z" fill="#e6464b" p-id="4469"></path>
             <path d="M565.664 434.528h-26.832v-21.456h26.832c16.112 0 26.832-10.736 26.832-26.832 0-16.112-10.72-26.848-26.832-26.848h-16.096l32.208-32.192c10.72-10.72 10.72-26.832 0-37.568-10.736-10.72-26.848-10.72-37.568 0L512 327.2l-32.192-37.568c-10.736-10.72-26.848-10.72-37.568 0-10.736 10.72-10.736 26.832 0 37.568l32.192 32.192h-16.096c-16.096 0-26.832 10.736-26.832 26.848 0 16.096 10.72 26.832 26.832 26.832h32.192v21.456h-32.192c-16.096 0-26.832 10.736-26.832 26.832 0 16.112 10.72 26.848 26.832 26.848h32.192v37.568c0 16.096 10.736 26.816 26.848 26.816 16.096 0 26.832-10.72 26.832-26.816v-37.568h21.456c16.112 0 26.832-10.736 26.832-26.848 0-16.096-10.72-26.832-26.832-26.832z" fill="#fecd41" opacity="1" p-id="4470"></path>
@@ -393,8 +489,26 @@
         </section>
         <section class="msg-control-list">
             <input type="file" name="images" accept="image/*" ref="file" v-show="false" @change="uploadImg">
-            <Button type="text" class="msg-image msg-control" @click="$refs['file'].click()"><Icon custom="fa fa-picture-o"/></Button>
-            <Button type="text" class="msg-face msg-control" @click="emojiForm = !emojiForm"><Icon custom="fa fa-smile-o"/></Button>
+
+            <Button type="text" class="msg-image msg-control" @click="$refs['file'].click()" title="上传图片"><Icon custom="fa fa-picture-o"/></Button>
+            <Button type="text" class="msg-face msg-control" @click="emojiForm = !emojiForm" title="发表情"><Icon custom="fa fa-smile-o"/></Button>
+            <Poptip title="发红包" placement="bottom" class="msg-control" >
+                <Button type="text" class="msg-redpacket" title="发红包">
+                    <svg class="redpacket-icon">
+                        <use xlink:href="#redPacketIcon"></use>
+                    </svg>
+                </Button>
+                <div class="redpacket-form" slot="content">
+                    <Form ref="redpacketForm" :model="redpacket" :label-width="40">
+                        <FormItem label="积分"><InputNumber  v-model="redpacket.money" :min="redpacket.count" placeholder="积分" /></FormItem>
+                        <FormItem label="个数"><InputNumber  v-model="redpacket.count" :min="1" placeholder="个数" /></FormItem>
+                        <FormItem label="留言"><Input v-model="redpacket.msg" placeholder="留言" /></FormItem>
+                        <FormItem>
+                            <Button type="error" @click="sendRedpacket">发送</Button>
+                        </FormItem>
+                    </Form>
+                </div>
+            </Poptip>
             <Tooltip placement="bottom-start" v-if="quote" :max-width="innerWidth * .8">
                 <Tag closable @on-close="quote=null" color="success" v-if="quote">引用：@{{quote.userName}}</Tag>
                 <div slot="content">
@@ -452,8 +566,8 @@
                             <div class="msg-menu-item" v-if="isEmoji()" title="消息中插入该表情" @click="appendMsg(null, emojiCode(item.content))">{{emojiCode(item.content)}}</div>
                             <div class="msg-menu-item" @click="quote = item">引用</div>
                         </div>
-                        <div class="redpacket-item" v-if="!!getRedPacket(item)">
-                            <div class="arrow" v-if="item.content.replace(/\n/g, '').match(/>[^<]+?</g)"/>
+                        <div class="redpacket-item" v-if="!!getRedPacket(item)" @click="openRedpacket(item)">
+                            <div class="arrow"/>
                             <div class="redpacket-content">
                                 <svg class="redpacket-icon">
                                     <use xlink:href="#redPacketIcon"></use>
@@ -473,6 +587,34 @@
                 <Icon custom="fa fa-caret-down" v-if="!loading"/>
                 <Icon custom="fa fa-circle-o-notch fa-spin" v-if="loading"/>
             </div>
+        </section>
+        <section class="redpacket" v-if="redpacketData != null">
+            <section class="redpacket-bg"></section>
+            <header>
+                <p class="redpacket-title"><Avatar :src="redpacketData.info.userAvatarURL" size="small"/> {{redpacketData.info.userName}} 的红包 </p>
+                <p class="redpacket-msg">{{redpacketData.info.msg}}</p>
+                <p class="redpacket-count">总计{{redpacketData.info.got}}/{{redpacketData.info.count}}</p>
+            </header>
+            <main class="redpacket-content">
+                <section>
+                    <p class="redpacket-current redpacket-money" v-if="redpacketData.who.find(w => w.userName == current.userName)">
+                        {{redpacketData.who.find(w => w.userName == current.userName).userMoney}} 积分
+                    </p>
+                    <p class="redpacket-current" v-if="!redpacketData.who.find(w => w.userName == current.userName)">
+                        错过了一个亿！
+                    </p>
+                </section>
+                <section class="redpacket-list">
+                    <ul>
+                        <li v-for="w in redpacketData.who" :style="{ fontWeight: maxRedpacket == w.userMoney ? 'bolder' : 'normal' }">
+                            <span class="redpacket-user"><Avatar :src="w.avatar" /> {{w.userName}}</span>
+                            <span class="redpacket-max redpacket-tip" v-if="maxRedpacket == w.userMoney">来自老王的认可</span>
+                            <span class="redpacket-zero redpacket-tip" v-if="0 == w.userMoney">0 溢事件</span>
+                            <span class="redpacket-money">{{w.userMoney}} 积分</span>
+                        </li>
+                    </ul>
+                </section>
+            </main>
         </section>
     </section>
 </article>
@@ -513,7 +655,13 @@
                 quote: null,
                 emojiForm: false,
                 menuTarget: null,
-                faces: emoji.urls
+                faces: emoji.urls,
+                redpacket: {
+                    money: 32,
+                    count: 2,
+                    msg: '摸鱼者，事竟成！'
+                },
+                redpacketData: null
             }
         },
         watch: {
@@ -538,9 +686,36 @@
             },
             emoji() {
                 return emoji;
+            },
+            maxRedpacket() {
+                return this.redpacketData && Math.max(...this.redpacketData.who.map(a => a.userMoney))
             }
         },
         methods: {
+            clear () {
+                this.menu = {};
+                this.emojiForm = false;
+                this.redpacketData = null;
+            },
+            async sendRedpacket() {
+                if (this.redpacket.count <= 0) return;
+                this.redpacket.msg = this.redpacket.msg || '摸鱼者，事竟成！';
+                let message = `[redpacket]${JSON.stringify(this.redpacket)}[/redpacket]`
+                await this.wsSend(message);
+            },
+            async openRedpacket(item) {
+                let rsp = await fetch('https://pwl.icu/chat-room/red-packet/open',
+                {
+                    body: JSON.stringify({
+                        oId: item.oId,
+                        apiKey: this.$root.token
+                    }),
+                    method: "post"
+                });
+                if (!rsp) return;
+                this.redpacketData = await rsp.json();
+                console.dir(this.redpacketData);
+            },
             isEmoji() {
                 return (this.menuTarget || { nodeName: '' }).nodeName.toLowerCase() == 'img'
                 && this.menuTarget.className == 'emoji';
@@ -607,7 +782,8 @@
             },
             getRedPacket(item) {
                 try {
-                    let data = JSON.parse(item.content.replace(/^<p>|<\/p>$/g, ''));
+                    let data = JSON.parse(item.content);
+                    if (data.msgType != 'redPacket') return false;
                     return data;
                 } catch (e) {
                     return false;
@@ -783,20 +959,7 @@
                     this.message = `${at}引用：\n\n${raw}\n\n${this.message}`;
                     this.quote = null;
                 }
-                let rsp = await ipc.sendipcSync('pwl-push', this.message);
-                if (!rsp) return;
-                rsp = rsp.data;
-                if (rsp.code == 401 && !retry && await this.$root.relogin()) {
-                    await this.init();
-                    if(await this.wsPush(ev, true))
-                        this.$Message.warning('服务器失联，已重新登录.');
-                    return true;
-                }
-                if (rsp.code != 0) {
-                    this.$Message.error(rsp.msg);
-                    return false;
-                }
-                console.log(rsp);
+                await this.wsSend(this.message);
                 this.message = '';
                 return true;
             },
@@ -824,6 +987,21 @@
                         if (this.content.length > 10000) this.load(1);
                         ipcRenderer.send('sys-msg', msg);
                         break;
+                }
+            },
+            async wsSend(message) {
+                let rsp = await ipc.sendipcSync('pwl-push', message);
+                if (!rsp) return;
+                rsp = rsp.data;
+                if (rsp.code == 401 && !retry && await this.$root.relogin()) {
+                    await this.init();
+                    if(await this.wsPush(ev, true))
+                        this.$Message.warning('服务器失联，已重新登录.');
+                    return true;
+                }
+                if (rsp.code != 0) {
+                    this.$Message.error(rsp.msg);
+                    return false;
                 }
             }
         }
