@@ -98,7 +98,6 @@
         mounted () {
             this.$root.token = localStorage.getItem('token')
             if (!this.$root.token) return;
-            ipcRenderer.send('pwl-token', { data: this.$root.token });
             this.$router.push('/chat');
         },
         data () {
@@ -148,10 +147,9 @@
                     if (!valid) return;
                     try {
                         this.login_loading = true;
-                        let rsp = await ipc.sendipcSync('pwl-login', this.login);
+                        let rsp = await this.$root.pwl.login(this.login);
                         this.login_loading = false;
                         if (!rsp) return;
-                        rsp = rsp.data;
                         if (rsp.code != 0) {
                             this.$Message.error(rsp.msg);
                             return;

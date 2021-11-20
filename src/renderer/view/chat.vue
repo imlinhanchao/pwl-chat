@@ -28,7 +28,7 @@
     display: flex;
     flex-direction: row;
     position: relative;
-    max-width: 80vw;
+    max-width: 75vw;
     .msg-img {
         padding: 10px;
         display: inline-block;
@@ -247,6 +247,12 @@
             border-right-color: transparent;
             border-left-color: #f90;
         }
+        &.redpacket-empty {
+            .arrow {
+                border-right-color: transparent;
+                border-left-color: #fecd41;
+            }
+        }
     }
 }
 
@@ -254,6 +260,14 @@
     display: flex;
     flex-direction: row;
     cursor: pointer;
+    &.redpacket-empty {
+        .redpacket-content {
+            background: #fecd41;
+        }
+        .arrow {
+            border-right-color: #fecd41;
+        }
+    }
     .arrow {
         border-right-color: #f90;
     }
@@ -374,6 +388,20 @@
         }
     }
 }
+.redpacket-status {
+    font-size: .8em;
+    text-align: center;
+    padding: 5px 0;
+    svg {
+        width: 15px;
+        height: 15px;
+        vertical-align: middle;
+    }
+    a {
+        color: #d23f31;
+        border-bottom: 1px dashed #d23f31;
+    }
+}
 </style>
 <style lang="less">
 .ivu-tabs.ivu-tabs-card>.ivu-tabs-bar .ivu-tabs-tab {
@@ -400,6 +428,9 @@
     border-top: 0;
 }
 .msg-contain, .msg-quote-tip {
+    a {
+        border-bottom: 1px dashed #17233d;
+    }
     img {
         max-height: 60vh;
         max-width: 40vw;
@@ -611,7 +642,10 @@
         </section>
         <section class="chat-content" ref="chat-content">
             <div v-for="(item, i) in content">
-                <div class="msg-item" :class="{'msg-current': item.userName == current.userName}">
+                <div class="redpacket-status" v-if="item.type == 'redPacketStatus'">
+                    <svg><use xlink:href="#redPacketIcon"></use></svg> {{item.whoGot}} 抢到了 {{item.whoGive}} 的 <a href="#" @click="openRedpacket(item)">红包</a> ({{item.got}}/{{item.count}})
+                </div>
+                <div class="msg-item" v-if="item.content" :class="{'msg-current': item.userName == current.userName}">
                     <a target="_blank" :href="`https://pwl.icu/member/${item.userName}`"><Avatar class="msg-avatar" :src="item.userAvatarURL" /></a>
                     <div :ref="`msg-${item.oId}`" :data-id="item.oId" class="msg-item-contain" @contextmenu="menuShow(item, $event)">
                         <div class="msg-user" :title="item.userNickname">{{item.userName}}</div>
@@ -620,9 +654,11 @@
                             <div class="msg-menu-item" v-if="item.userName != current.userName" @click="atMsg(item)">@{{item.userName}}</div>
                             <div class="msg-menu-item" v-if="hasFace(item.content)" @click="addFace">添加到表情包</div>
                             <div class="msg-menu-item" v-if="isEmoji()" title="消息中插入该表情" @click="appendMsg(null, emojiCode(item.content))">{{emojiCode(item.content)}}</div>
-                            <div class="msg-menu-item" @click="quote = item">引用</div>
+                            <div class="msg-menu-item" v-if="!getRedPacket(item)" @click="quote = item">引用</div>
                         </div>
-                        <div class="redpacket-item" v-if="!!getRedPacket(item)" @click="openRedpacket(item)">
+                        <div class="redpacket-item" :title="getRedPacket(item).empty ? '红包已领完' : ''"
+                        :class="{'redpacket-empty': getRedPacket(item).empty}" 
+                        v-if="!!getRedPacket(item)" @click="openRedpacket(item)">
                             <div class="arrow"/>
                             <div class="redpacket-content">
                                 <svg class="redpacket-icon">
@@ -635,7 +671,7 @@
                             <div class="arrow" v-if="item.content.replace(/\n/g, '').match(/>[^<]+?</g)"/>
                             <div class="msg-content" v-html="formatContent(item.content)" v-if="item.content.replace(/\n/g, '').match(/>[^<]+?</g)"/>
                             <span class="msg-img" v-if="!item.content.replace(/\n/g, '').match(/>[^<]+?</g)" v-html="formatContent(item.content)"></span>
-                            <span class="plus-one" @click="followMsg(item)" v-if="i < content.length - 1 && item.content == content[i + 1].content">+1</span>
+                            <span class="plus-one" @click="followMsg(item)" v-if="i == 0 && item.content == content[i + 1].content">+1</span>
                         </div>
                     </div>
                 </div>
@@ -774,16 +810,9 @@
                 this.$refs['redpacketForm'].handleClose();
             },
             async openRedpacket(item) {
-                let rsp = await fetch('https://pwl.icu/chat-room/red-packet/open',
-                {
-                    body: JSON.stringify({
-                        oId: item.oId,
-                        apiKey: this.$root.token
-                    }),
-                    method: "post"
-                });
+                let rsp = await this.$root.pwl.openRedpacket(item.oId);
                 if (!rsp) return;
-                this.redpacketData = await rsp.json();
+                this.redpacketData = rsp;
                 console.dir(this.redpacketData);
             },
             isEmoji() {
@@ -804,21 +833,14 @@
                 emoji.save();
             },
             sendFace(face) {
+                this.lastCursor = this.msgCursor();
                 this.appendMsg(null, face);
                 this.emojiForm = false;
             },
             async uploadFace(ev) {
                 let files = Array.from(ev.target.files)
-                let data = new FormData();
-                files.forEach(f => data.append('file[]', f));
-
-                let rsp = await fetch('https://pwl.icu/upload',
-                {
-                    body: data,
-                    method: "post"
-                });
+                let rsp = await this.$root.pwl.upload(files);
                 if (!rsp) return;
-                rsp = await rsp.json();
                 if (rsp.code != 0) {
                     this.$Message.error(rsp.msg);
                     return;
@@ -832,16 +854,8 @@
             },
             async uploadImg(ev) {
                 let files = Array.from(ev.target.files)
-                let data = new FormData();
-                files.forEach(f => data.append('file[]', f));
-
-                let rsp = await fetch('https://pwl.icu/upload',
-                {
-                    body: data,
-                    method: "post"
-                });
+                let rsp = await this.$root.pwl.upload(files);
                 if (!rsp) return;
-                rsp = await rsp.json();
                 if (rsp.code != 0) {
                     this.$Message.error(rsp.msg);
                     return;
@@ -854,6 +868,7 @@
                 try {
                     let data = JSON.parse(item.content);
                     if (data.msgType != 'redPacket') return false;
+                    data.empty = item.empty || data.got == data.count
                     return data;
                 } catch (e) {
                     return false;
@@ -892,9 +907,8 @@
             async getAt(name) {
                 if (!name) return;
                 console.log(name)
-                let rsp = await ipc.sendipcSync('pwl-at', name);
+                let rsp = await this.$root.pwl.atlist(name);
                 if (!rsp) return;
-                rsp = rsp.data;
                 if (rsp.code != 0) {
                     this.$Message.error(rsp.msg);
                     return;
@@ -935,9 +949,8 @@
                 // this.faceMenu = { [item]: pos };
             },
             async revokeMsg(id) {
-                let rsp = await ipc.sendipcSync('pwl-revoke', id);
+                let rsp = await this.$root.pwl.revoke(id);
                 if (!rsp) return;
-                rsp = rsp.data;
                 if (rsp.code != 0) {
                     this.$Message.error(rsp.msg);
                     return;
@@ -954,13 +967,11 @@
                     await this.load(1);
                     await this.load(2);
                     await this.wsInit();
-                    await this.getLiveness()
                 }
             },
             async info() {
-                let rsp = await ipc.sendipcSync('pwl-info', this.$root.token);
+                let rsp = await this.$root.pwl.info(this.$root.token);
                 if (!rsp) return false;
-                rsp = rsp.data;
                 if (rsp.code != 0) {
                     localStorage.removeItem('token')
                     this.$router.push('/');
@@ -973,10 +984,9 @@
             async load(page) {
                 if (this.loading) return;
                 this.loading = true;
-                let rsp = await ipc.sendipcSync('pwl-history', page);
+                let rsp = await this.$root.pwl.history(page);
                 this.loading = false;
                 if (!rsp) return;
-                rsp = rsp.data;
                 if (rsp.code != 0) {
                     this.$Message.error(rsp.msg);
                     return;
@@ -1016,11 +1026,10 @@
                 
             },
             async followMsg(item) {
-                let rsp = await ipc.sendipcSync('pwl-raw', item.oId);
-                let raw = rsp.data;
+                let raw = await this.$root.pwl.raw(item.oId);
                 await this.wsSend(raw);
             },
-            async wsPush(ev, retry) {
+            async wsPush(ev) {
                 if (this.currentSel >= 0) {
                     if (this.atList.length > 0) this.atUser(this.currentSel);
                     if (this.emojiList.length > 0) this.emojiSel(this.currentSel);
@@ -1028,14 +1037,13 @@
                 }
                 if (!this.message) return;
                 if (this.quote) {
-                    let rsp = await ipc.sendipcSync('pwl-raw', this.quote.oId);
-                    let raw = rsp.data;
+                    let raw = await this.$root.pwl.raw(this.quote.oId);
                     raw = raw.split('\n').map(r => `>${r}`).join('\n').trim();
                     let at = this.quote.userName != this.current.userName ? `@${this.quote.userName} ` : ''
                     this.message = `${at}引用：\n\n${raw}\n\n${this.message}`;
                     this.quote = null;
                 }
-                await this.wsSend(this.message);
+                await this.wsSend(this.message, false);
                 this.message = '';
                 return true;
             },
@@ -1059,19 +1067,27 @@
                         }
                         break;
                     case "msg":  //消息
+                    case "redPacketStatus":
                         this.content.splice(0, 0, msg)
                         if (this.content.length > 10000) this.load(1);
-                        ipcRenderer.send('sys-msg', msg);
+                        if(msg.type == 'msg') ipcRenderer.send('sys-msg', msg);
+                        else if (msg.count == msg.got) {
+                            for (let i = 0; i < this.content.length; i++) {
+                                let c= this.content[i];
+                                if (c.oId != msg.oId || c.type == 'redPacketStatus') continue;
+                                this.content[i].empty = true;
+                                break;
+                            }
+                        }
                         break;
                 }
             },
-            async wsSend(message) {
-                let rsp = await ipc.sendipcSync('pwl-push', message);
+            async wsSend(message, retry) {
+                let rsp = await this.$root.pwl.push(message);
                 if (!rsp) return;
-                rsp = rsp.data;
                 if (rsp.code == 401 && !retry && await this.$root.relogin()) {
                     await this.init();
-                    if(await this.wsPush(ev, true))
+                    if(await this.wsSend(message, true))
                         this.$Message.warning('服务器失联，已重新登录.');
                     return true;
                 }
@@ -1079,13 +1095,6 @@
                     this.$Message.error(rsp.msg);
                     return false;
                 }
-            },
-            async getLiveness() {
-                let rsp = await fetch(`https://pwl.icu/user/liveness?apiKey=${this.$root.token}`);
-                if (!rsp) return;
-                let data = await rsp.json();
-                console.dir(data);
-                return data.liveness;
             }
         }
     }
