@@ -52,8 +52,42 @@ header {
     border: 2px dashed #aca49a;
     vertical-align: middle;
 }
-.content {
+.content, footer {
     -webkit-app-region: no-drag;
+}
+.liveness {
+    background: #57a3f3;
+    position: absolute;
+    z-index: 1000;
+    cursor: pointer;
+    -webkit-app-region: no-drag;
+}
+.liveness-top-left {
+    left: 1px;
+    top: 1px;    
+    height: 2px;
+}
+.liveness-top-right {
+    right: 1px;
+    top: 1px;    
+    height: 2px;
+}
+.liveness-left {
+    left: 1px;
+    bottom: 1px;
+    width: 2px;
+}
+.liveness-right {
+    right: 1px;
+    bottom: 1px;
+    width: 2px;
+}
+.liveness-bottom {
+    left: 1px;
+    right: 1px;
+    bottom: 1px;
+    margin: auto;
+    height: 2px;
 }
 </style>
 <style lang="less">
@@ -79,6 +113,13 @@ header {
     <Content class="content">
         <router-view />
     </Content>
+    <footer>
+        <div class="liveness liveness-top-left" :title="livenessTitle" :style="{ width: top + 'px', background: background }"></div>
+        <div class="liveness liveness-top-right" :title="livenessTitle" :style="{ width: top + 'px', background: background }"></div>
+        <div class="liveness liveness-left" :title="livenessTitle" :style="{ height: side + 'px', background: background }"></div>
+        <div class="liveness liveness-right" :title="livenessTitle" :style="{ height: side + 'px', background: background }"></div>
+        <div class="liveness liveness-bottom" :title="livenessTitle" :style="{ width: (bottom * 2) + 'px', background: background }"></div>
+    </footer>
 </div>
 </template>
 
@@ -93,8 +134,8 @@ header {
         window.onresize = () => {
             return (() => {
                 this.screen = {
-                    height: window.innerHeight,
-                    width: window.innerWidth
+                    height: window.innerHeight - 2,
+                    width: window.innerWidth - 2
                 }
             })()
         }
@@ -102,11 +143,21 @@ header {
         ipcRenderer.send('win-top', this.wintop)
         this.opacity = localStorage.getItem('window-opacity') == '1';
         ipcRenderer.send('win-opacity', this.opacity)
+        this.timer = setInterval(async () => {
+            this.liveness = await this.$root.pwl.liveness();
+            if (this.liveness >= 100) clearInterval(this.timer);
+        }, 2000)
     },
     data () {
         return {
             wintop: false,
-            opacity: false
+            opacity: false,
+            liveness: 0,
+            timer: 0,
+            screen: {
+                height: window.innerHeight - 2,
+                width: window.innerWidth - 2
+            }
         }
     },
     watch: {
@@ -114,9 +165,30 @@ header {
     filters: {
     },
     computed: {
+        background() {
+            return this.liveness >= 10 ? '#d23f31' : '#57a3f3'
+        },
+        livenessTitle() {
+            return this.liveness + '%'
+        },
         title() {
             return document.title;
         },
+        len () {
+            return this.liveness / 100 * this.size;
+        },
+        bottom() {
+            return Math.min(this.len, this.screen.width / 2)
+        },
+        side () {
+            return Math.min(this.len - this.bottom, this.screen.height)
+        },
+        top () {
+            return this.len - this.bottom - this.side;
+        },
+        size () {
+            return this.screen.height + this.screen.width
+        }
     },
     methods: {
         handleClose() {
