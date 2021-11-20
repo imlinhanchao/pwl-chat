@@ -8,7 +8,6 @@ let create = (app, win) => {
     let openfile = null;
     let index = process.argv.indexOf('-f');
     if (index > 0) openfile = process.argv[index + 1]
-    let pwl = new PWL();
 
     ipcMain.on('win-close', (event, arg) => {
         app.quit()
