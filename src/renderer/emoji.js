@@ -732,7 +732,7 @@ export default {
         return emojiNames.filter(e => e.startsWith(name)).slice(0, 5).map(e => ({ name: e, url: emojis[e].url }));
     },
     get (name) {
-        return emojis[name] ? `:${name}:` : `![动画表情](${name})`;
+        return emojis[name] ? `:${name}:` : `![图片表情](${name})`;
     },
     getUrl (name) {
         return emoji[name].url;

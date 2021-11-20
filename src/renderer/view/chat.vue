@@ -31,17 +31,20 @@
     max-width: 80vw;
     .msg-img {
         padding: 10px;
+        display: inline-block;
     }
     .plus-one {
-        top: 0;
-        bottom: 0;
-        margin: auto;
-        right: -1.5em;
-        font-weight: bold;
-        color: #d23f31;
-        position: absolute;
-        height: 2em;
+        font-size: .8em;
+        margin: auto 5px;
+        font-weight: bolder;
+        color: #FFF;
+        height: 1.8em;
+        width: 1.8em;
+        background: #d23f31;
+        border-radius: 1em;
+        text-align: center;
         cursor: pointer;
+        font-family: mononoki,Consolas,"Liberation Mono",Menlo,Courier,monospace;
     }
 }
 
@@ -81,6 +84,7 @@
     }
     .plus-one {
         left: -1.5em;
+        right: auto;
     }
 }
 .chat-content {
@@ -401,7 +405,7 @@
         max-width: 40vw;
         cursor: pointer;
         background: #FFF;
-        &[alt='动画表情'] {
+        &[alt='图片表情'] {
             background: transparent;
         }
     }
@@ -631,7 +635,7 @@
                             <div class="arrow" v-if="item.content.replace(/\n/g, '').match(/>[^<]+?</g)"/>
                             <div class="msg-content" v-html="formatContent(item.content)" v-if="item.content.replace(/\n/g, '').match(/>[^<]+?</g)"/>
                             <span class="msg-img" v-if="!item.content.replace(/\n/g, '').match(/>[^<]+?</g)" v-html="formatContent(item.content)"></span>
-                            <span class="plus-one" @click="followMsg(item)" v-if="i == 0 && item.content == content[1].content">+1</span>
+                            <span class="plus-one" @click="followMsg(item)" v-if="i < content.length - 1 && item.content == content[i + 1].content">+1</span>
                         </div>
                     </div>
                 </div>
@@ -950,6 +954,7 @@
                     await this.load(1);
                     await this.load(2);
                     await this.wsInit();
+                    await this.getLiveness()
                 }
             },
             async info() {
@@ -1074,6 +1079,13 @@
                     this.$Message.error(rsp.msg);
                     return false;
                 }
+            },
+            async getLiveness() {
+                let rsp = await fetch(`https://pwl.icu/user/liveness?apiKey=${this.$root.token}`);
+                if (!rsp) return;
+                let data = await rsp.json();
+                console.dir(data);
+                return data.liveness;
             }
         }
     }
