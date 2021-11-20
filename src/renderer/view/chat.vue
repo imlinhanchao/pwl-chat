@@ -401,6 +401,9 @@
         max-width: 40vw;
         cursor: pointer;
         background: #FFF;
+        &[alt='动画表情'] {
+            background: transparent;
+        }
     }
     ul, ol {
         list-style-position: inside;
