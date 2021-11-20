@@ -1,7 +1,6 @@
 import {
     ipcMain, dialog
 } from 'electron'
-import PWL from '../lib/pwl'
 import windows from './windows'
 import fs from 'fs'
 
