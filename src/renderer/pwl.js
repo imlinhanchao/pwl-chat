@@ -1,28 +1,20 @@
-import axios from 'axios';
-import SparkMD5 from 'spark-md5'
-import http from 'http'
-import https from 'https'
-
+import crypto from 'crypto'
 
 class PWL {
     constructor(token) {
-        this.axios = axios.create({
-            baseURL: 'https://pwl.icu/',
-            timeout: 20000,
-        })
-        this.cookies = {}
         if (!token) return;
         this.token = token;
     }
 
     async login(data) {
         try {
+            let md5 = crypto.createHash('md5');
             let rsp = await this.request({
                 url: 'api/getKey',
                 method: 'post',
                 data: {
                     nameOrEmail: data.username,
-                    userPassword: SparkMD5.hash(data.passwd)
+                    userPassword: md5.update(data.passwd).digest('hex')
                 },
             });
 
@@ -30,7 +22,7 @@ class PWL {
 
             return rsp.data;            
         } catch (e) {
-            throw(e)
+            return { code: -1, msg: e.message };
         }
     }
 
@@ -46,7 +38,7 @@ class PWL {
 
             return rsp.data
         } catch (e) {
-            throw(e)
+            return { code: -1, msg: e.message };
         }
     }
 
@@ -60,7 +52,7 @@ class PWL {
 
             return rsp.data;
         } catch (e) {
-            throw(e)
+            return { code: -1, msg: e.message };
         }
     }
 
@@ -79,7 +71,7 @@ class PWL {
 
             return rsp.data;            
         } catch (e) {
-            throw(e)
+            return { code: -1, msg: e.message };
         }
     }
 
@@ -98,7 +90,7 @@ class PWL {
 
             return rsp.data;            
         } catch (e) {
-            throw(e)
+            return { code: -1, msg: e.message };
         }
     }
 
@@ -118,7 +110,7 @@ class PWL {
 
             return rsp.data;            
         } catch (e) {
-            throw(e)
+            return { code: -1, msg: e.message };
         }
     }
 
@@ -129,9 +121,63 @@ class PWL {
                 url: `cr/raw/${oId}`,
             })
 
-            return rsp.data.replace(/<!--.*?-->/g, '')
+            return rsp.raw.replace(/<!--.*?-->/g, '')
         } catch (e) {
-            throw(e)
+            return { code: -1, msg: e.message };
+        }
+    }
+
+    async openRedpacket(oId) {
+        let rsp;
+        try {
+            rsp = await this.request({
+                url: `chat-room/red-packet/open`,
+                method: 'post',
+                data: {
+                    oId,
+                    apiKey: this.token
+                },
+            });
+
+            if (rsp.status == 401) return { code: 401, msg: '登录已失效，请重新登录！' };
+
+            return rsp.data;            
+        } catch (e) {
+            return { code: -1, msg: e.message };
+        }
+    }
+
+    async upload(files) {
+        let data = new FormData();
+        files.forEach(f => data.append('file[]', f));
+
+        let rsp;
+        try {
+            rsp = await this.request({
+                url: `upload`,
+                method: 'post',
+                data,
+            });
+
+            if (rsp.status == 401) return { code: 401, msg: '登录已失效，请重新登录！' };
+
+            return rsp.data;            
+        } catch (e) {
+            return { code: -1, msg: e.message };
+        }
+    }
+
+    async liveness() {
+        try {
+            let rsp = await this.request({
+                url: `user/liveness?apiKey=${this.token}`
+            })
+
+            if (rsp.status == 401) return { code: 401, msg: '登录已失效，请重新登录！' };
+
+            return rsp.data.liveness;
+        } catch (e) {
+            return { code: -1, msg: e.message };
         }
     }
 
@@ -140,41 +186,24 @@ class PWL {
             url,
             method = 'get',
             headers = {},
-            cookies = this.cookies,
-            data = null
+            data = undefined
         } = opt;
-    
-        headers['User-Agent'] =
-            'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36';
-        headers['Referer'] = 'https://pwl.icu/';
-    
-        if (typeof cookies === 'object') {
-            headers['Cookie'] = Object.keys(cookies)
-                .map((k) => encodeURIComponent(k) + '=' + encodeURIComponent(cookies[k]))
-                .join('; ');
-        } else if (typeof cookies === 'string') {
-            headers['Cookie'] = cookies;
-        }
-    
+
+        let body = data instanceof FormData ? data : data && JSON.stringify(data);
+            
         let options = {
-            url, method, headers, data,
-            httpAgent: new http.Agent({
-                keepAlive: true
-            }),
-            httpsAgent: new https.Agent({
-                keepAlive: true,
-                rejectUnauthorized: false,
-            }),
+            method, headers, body,
         };
     
         let rsp;
         try {
-            rsp = await this.axios.request(options);
-    
+            rsp = await fetch(`https://pwl.icu/${url}`, options);
+            try{ rsp.data = await rsp.clone().json(); } catch(e) {}
+            rsp.raw = await rsp.clone().text();
             return rsp;
         } catch (e) {
-            if (e.response.status == 401) return e.response;
             console.error(e);
+            if (e.response.status == 401) return e.response;
             throw(e)
         }
     }

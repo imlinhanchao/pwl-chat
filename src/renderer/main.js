@@ -1,4 +1,5 @@
 import ipc from './ipc'
+import PWL from './pwl'
 
 import Vue from 'vue'
 import axios from 'axios'
@@ -49,25 +50,27 @@ new Vue({
   data: {
     host: '',
     token: '',
+    pwl: new PWL(),
   },
   methods: {
     sendipc: ipc.sendipc,
     sendipcSync: ipc.sendipcSync,
+    makePWL(token) {
+      this.pwl = new PWL(token);
+    },
     async relogin() {
       let login = {
         username: localStorage.getItem('username'),
         passwd: localStorage.getItem('passwd')
       };
-      let rsp = await ipc.sendipcSync('pwl-login', login);
+      let rsp = await await this.$root.pwl.login(login);
       if (!rsp) return false;
-      rsp = rsp.data;
       if (rsp.code != 0) {
           this.$Message.error(rsp.msg);
           return false;
       }
       localStorage.setItem('token', rsp.Key);
       this.token = rsp.Key;
-      ipcRenderer.send('pwl-token', { data: this.$root.token });
       return true;
     }
   },
@@ -75,5 +78,10 @@ new Vue({
     title() {
         return document.title;
     },
+  },
+  watch: {
+    token(val) {
+      this.makePWL(val)
+    }
   }
 }).$mount('#app')
