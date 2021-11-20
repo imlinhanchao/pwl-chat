@@ -427,6 +427,13 @@
     border: 1px solid #d1d5da;
     border-top: 0;
 }
+.msg-current {
+    .msg-content {
+        a {
+            border-bottom: 1px dashed #F6F8FA;
+        }
+    }
+}
 .msg-contain, .msg-quote-tip {
     a {
         border-bottom: 1px dashed #17233d;
@@ -730,6 +737,8 @@
                 return;
             }
             this.init();
+            document.removeEventListener('paste', this.onPaste);
+            document.addEventListener('paste', this.onPaste);
         },
         data () {
             return {
@@ -785,8 +794,19 @@
             }
         },
         methods: {
-            refreshHljs() {
-                this.$refs['chat-content'].$el.querySelectorAll('code')
+            async onPaste(ev) {
+                let items = ev.clipboardData && ev.clipboardData.items;
+                let file = null;
+                if (items && items.length) {
+                    for (var i = 0; i < items.length; i++) {
+                        if (items[i].type.indexOf('image') !== -1) {
+                            file = items[i].getAsFile();
+                            break;
+                        }
+                    }
+                }
+                this.lastCursor = this.msgCursor();
+                await this.uploadImg({ target: { files: [ file ]}});
             },
             clear (ev) {
                 this.menu = {};
@@ -862,6 +882,7 @@
                 }
                 let fileData = rsp.data.succMap;
                 let filename = Object.keys(fileData)[0]
+                this.lastCursor = this.msgCursor();
                 this.appendMsg(null, `![${filename}](${fileData[filename]})`); 
             },
             getRedPacket(item) {
