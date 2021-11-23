@@ -661,7 +661,7 @@
                             <div class="msg-menu-item" v-if="item.userName == current.userName" @click="revokeMsg(item.oId)">撤回</div>
                             <div class="msg-menu-item" v-if="item.userName != current.userName" @click="atMsg(item)">@{{item.userName}}</div>
                             <div class="msg-menu-item" v-if="hasFace(item.content)" @click="addFace">添加到表情包</div>
-                            <div class="msg-menu-item" @click="followMsg(item)">复读一下</div>
+                            <div class="msg-menu-item" v-if="!getRedPacket(item)" @click="followMsg(item)">复读一下</div>
                             <div class="msg-menu-item" v-if="isEmoji()" title="消息中插入该表情" @click="appendMsg(null, emojiCode(item.content))">{{emojiCode(item.content)}}</div>
                             <div class="msg-menu-item" v-if="!getRedPacket(item)" @click="quote = item">引用</div>
                         </div>
