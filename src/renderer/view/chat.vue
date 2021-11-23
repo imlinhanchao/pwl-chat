@@ -806,6 +806,7 @@
                         }
                     }
                 }
+                if (!file) return;
                 this.lastCursor = this.msgCursor();
                 await this.uploadImg({ target: { files: [ file ]}});
             },
@@ -1070,8 +1071,6 @@
                 return true;
             },
             wsMessage(e) {
-                console.log("onmessage");
-                console.log(e)
                 let msg = JSON.parse(e.data)
                 
                 switch (msg.type) {
