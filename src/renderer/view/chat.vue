@@ -260,6 +260,7 @@
     display: flex;
     flex-direction: row;
     cursor: pointer;
+    user-select: none;
     &.redpacket-empty {
         .redpacket-content {
             background: #fecd41;
