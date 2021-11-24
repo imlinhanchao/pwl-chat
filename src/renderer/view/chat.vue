@@ -592,6 +592,8 @@
                         <FormItem label="积分"><InputNumber  v-model="redpacket.money" :min="redpacket.count" placeholder="积分" /></FormItem>
                         <FormItem label="个数"><InputNumber  v-model="redpacket.count" :min="1" placeholder="个数" /></FormItem>
                         <FormItem label="留言"><Input v-model="redpacket.msg" placeholder="留言" /></FormItem>
+                        <FormItem label="连发"><InputNumber  v-model="redpacket.times" :min="1" placeholder="连发" /></FormItem>
+                        <FormItem label="间隔(s)"><InputNumber  v-model="redpacket.interval" :min="1" placeholder="秒" /></FormItem>
                         <FormItem>
                             <Button type="error" @click="sendRedpacket">发送</Button>
                         </FormItem>
@@ -685,7 +687,7 @@
                     </div>
                 </div>
             </div>
-            <div class="msg-more" @click="load(page + 1)" v-if="content.length < 9900">
+            <div class="msg-more" @click="load(page + 1)" v-if="content.length < 1999">
                 <Icon custom="fa fa-caret-down" v-if="!loading"/>
                 <Icon custom="fa fa-circle-o-notch fa-spin" v-if="loading"/>
             </div>
@@ -763,6 +765,8 @@
                 redpacket: {
                     money: 32,
                     count: 2,
+                    times: 1,
+                    interval: 1,
                     msg: '摸鱼者，事竟成！'
                 },
                 redpacketData: null
@@ -827,9 +831,14 @@
             },
             async sendRedpacket() {
                 if (this.redpacket.count <= 0) return;
-                this.redpacket.msg = this.redpacket.msg || '摸鱼者，事竟成！';
-                let message = `[redpacket]${JSON.stringify(this.redpacket)}[/redpacket]`
-                await this.wsSend(message);
+                let redpacket = Object.assign({}, this.redpacket);
+                redpacket.msg = redpacket.msg || '摸鱼者，事竟成！';
+                let data = { msg: redpacket.msg, money: redpacket.money, count: redpacket.count } 
+                let timer = setInterval(async () => {
+                    let message = `[redpacket]${JSON.stringify(data)}[/redpacket]`
+                    await this.wsSend(message);
+                    if (--redpacket.times == 0) clearInterval(timer);
+                }, this.redpacket.interval * 1000)
                 this.$refs['redpacketForm'].handleClose();
             },
             async openRedpacket(item) {
@@ -1096,7 +1105,7 @@
                     case "msg":  //消息
                     case "redPacketStatus":
                         this.content.splice(0, 0, msg)
-                        if (this.content.length > 10000) this.load(1);
+                        if (this.content.length > 2000) this.load(1);
                         if(msg.type == 'msg') ipcRenderer.send('sys-msg', msg);
                         else if (msg.count == msg.got) {
                             for (let i = 0; i < this.content.length; i++) {
