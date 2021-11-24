@@ -1,3 +1,5 @@
+import PWL from "./pwl";
+
 let emojis = {
     "doge": {
         "type": "vditor",
@@ -723,11 +725,17 @@ let emojis = {
 
 let faces = JSON.parse(localStorage.getItem('faces')) || {};
 faces['^faces'] = faces['^faces'] || { type: 'urls', url: []}
+faces['^syncs'] = faces['^syncs'] || { type: 'urls', url: []}
 emojis = Object.assign(emojis, faces);
 
 const emojiNames = Object.keys(emojis);
 
 export default {
+    async load(token) {
+        let pwl = new PWL(token);
+        let data = await pwl.emoji();
+        emojis['^syncs'] = faces['^syncs'] = { type: 'syncs', url: data }
+    },
     search(name) {
         return emojiNames.filter(e => e.startsWith(name)).slice(0, 5).map(e => ({ name: e, url: emojis[e].url }));
     },
@@ -737,10 +745,25 @@ export default {
     getUrl (name) {
         return emoji[name].url;
     },
+    async merge (token) {
+        if (!token || faces['^faces'].url.length == 0) return;
+        let pwl = new PWL(token);
+        let data = await pwl.emoji();
+        data = Array.from(new Set(data.concat(faces['^faces'].url)));
+        emojis['^syncs'] = faces['^syncs'] = { type: 'syncs', url: data }
+        faces['^faces'].url = [];
+        this.save();
+        await this.sync(token);
+    },
+    async sync (token) {
+        if (!token) return;
+        let pwl = new PWL(token);
+        await pwl.syncEmoji(faces['^syncs'].url);
+    },
     push (name, url) {
-        if (!name && faces['^faces'].url.indexOf(url) < 0) {
-            faces['^faces'].url.push(url);
-            emojis['^faces'].url = faces['^faces'].url;
+        if (!name && faces['^syncs'].url.indexOf(url) < 0) {
+            faces['^syncs'].url.push(url);
+            emojis['^syncs'].url = faces['^syncs'].url;
             return true;
         }
         else if(!name) return false;
@@ -752,11 +775,18 @@ export default {
         emojiNames.push(name);
         return true;
     },
-    save () {
+    remove (url, token) {
+        faces['^syncs'].url.splice(faces['^syncs'].url.indexOf(url), 1);
+        emojis['^syncs'].url = faces['^syncs'].url
+        this.save(token);
+        return emojis['^syncs'].url;
+    },
+    save (token) {
         localStorage.setItem('faces', JSON.stringify(faces));
+        if (token) this.sync(token);
     },
     get urls () {
-        return emojis['^faces'].url;
+        return emojis['^syncs'].url;
     },
     list (type) {
         return emojiNames.filter(e => emojis[e].type == type).map(e => ({ name: e, url: emojis[e].url }));

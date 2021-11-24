@@ -127,6 +127,48 @@ class PWL {
         }
     }
 
+    async emoji() {
+        let rsp;
+        try {
+            rsp = await this.request({
+                url: `api/cloud/get`,
+                method: 'post',
+                data: {
+                    gameId: 'emojis',
+                    apiKey: this.token
+                },
+            });
+
+            if (rsp.status == 401) return { code: 401, msg: '登录已失效，请重新登录！' };
+
+            return JSON.parse(rsp.data.data);            
+        } catch (e) {
+            return { code: -1, msg: e.message };
+        }
+    }
+
+    async syncEmoji(data)
+    {
+        let rsp;
+        try {
+            rsp = await this.request({
+                url: `api/cloud/sync`,
+                method: 'post',
+                data: {
+                    gameId: 'emojis',
+                    data: JSON.stringify(data),
+                    apiKey: this.token
+                },
+            });
+
+            if (rsp.status == 401) return { code: 401, msg: '登录已失效，请重新登录！' };
+
+            return rsp.data;            
+        } catch (e) {
+            return { code: -1, msg: e.message };
+        }
+    }
+
     async openRedpacket(oId) {
         let rsp;
         try {
@@ -168,6 +210,7 @@ class PWL {
     }
 
     async liveness() {
+        if (!this.token) return 0;
         try {
             let rsp = await this.request({
                 url: `user/liveness?apiKey=${this.token}`

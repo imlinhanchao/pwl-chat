@@ -198,10 +198,17 @@
                 height: 59px;
                 overflow: hidden;
                 background-size: cover;
+                position: relative;
                 .face-space {
                     display: inline-block;
                     width: 59px;
                     height: 59px;
+                }
+                .face-remove {
+                    position: absolute;
+                    top: -5px;
+                    right: 5px;
+                    font-size: .5em;
                 }
                 img {
                     max-width: 100%;
@@ -550,6 +557,9 @@
             <path d="M705.2 445.28C689.12 536.48 608.608 606.256 512 606.256c-91.232 0-171.728-64.4-187.84-150.272l-134.16-80.496V783.36c0 59.04 48.304 101.968 101.968 101.968h440.064c59.04 0 101.968-48.288 101.968-101.968V370.128l-128.8 75.136zM512 219.856c91.232 0 166.368 64.4 187.84 150.256l134.16-85.856v-48.304c0-59.04-48.304-101.968-101.968-101.968H291.968c-53.664 0-101.968 42.928-101.968 101.968v59.04l134.16 80.48c16.112-91.216 96.608-155.616 187.84-155.616z" fill="#e6464b" p-id="4469"></path>
             <path d="M565.664 434.528h-26.832v-21.456h26.832c16.112 0 26.832-10.736 26.832-26.832 0-16.112-10.72-26.848-26.832-26.848h-16.096l32.208-32.192c10.72-10.72 10.72-26.832 0-37.568-10.736-10.72-26.848-10.72-37.568 0L512 327.2l-32.192-37.568c-10.736-10.72-26.848-10.72-37.568 0-10.736 10.72-10.736 26.832 0 37.568l32.192 32.192h-16.096c-16.096 0-26.832 10.736-26.832 26.848 0 16.096 10.72 26.832 26.832 26.832h32.192v21.456h-32.192c-16.096 0-26.832 10.736-26.832 26.832 0 16.112 10.72 26.848 26.832 26.848h32.192v37.568c0 16.096 10.736 26.816 26.848 26.816 16.096 0 26.832-10.72 26.832-26.816v-37.568h21.456c16.112 0 26.832-10.736 26.832-26.848 0-16.096-10.72-26.832-26.832-26.832z" fill="#fecd41" opacity="1" p-id="4470"></path>
         </symbol>
+        <symbol id="delIcon" viewBox="0 0 1029 1024">
+            <path d="M5.680999 1.42025h1022.57975v1022.57975C463.001387 1024 5.680999 565.969487 5.680999 1.42025z m592.244105 494.246879L724.327323 622.069348c17.042996 17.042996 44.737864 17.042996 61.78086 0l7.101248-7.101248c17.042996-17.042996 17.042996-44.737864 0-61.78086L666.807212 426.785021l126.402219-126.402219c17.042996-17.042996 17.042996-44.737864 0-61.78086l-7.101248-7.101249c-17.042996-17.042996-44.737864-17.042996-61.78086 0L597.925104 357.902913 471.522885 231.500693c-17.042996-17.042996-44.737864-17.042996-61.78086 0l-7.101248 7.101249c-17.042996 17.042996-17.042996 44.737864 0 61.78086l126.402219 126.402219-126.402219 125.692094c-17.042996 17.042996-17.042996 44.737864 0 61.78086l7.101248 7.101248c17.042996 17.042996 44.737864 17.042996 61.78086 0l126.402219-125.692094z" fill="#bfbfbf" p-id="5348"></path>
+        </symbol>
         <section class="chat-form">
             <span class="logout" @click="logout"><Avatar :src="current.userAvatarURL" title="点击注销"/></span>
             <Input ref="message"
@@ -621,15 +631,13 @@
                     </TabPane>
                     <TabPane label="收藏表情" name="faces">
                         <article class="face-list face-diy">
-                            <section :ref="`face-${i}`" @contextmenu="faceMenuShow(i, $event)" 
+                            <section :ref="`face-${i}`"
                                 class="face-item" v-for="(u, i) in faces" 
                                 :style="{ backgroundImage: `url(${u})`}" 
                                 @click="sendFace(emoji.get(u))">
-                                <div class="face-menu" v-if="faceMenu[i]" :style="{ top: faceMenu[i].y + 'px', left: faceMenu[i].x + 'px' }">
-                                    <div class="face-menu-item" @click="removeFace(i)">删除</div>
-                                </div>
                                 <Tooltip :placement="i % 4 < 3 ? 'bottom-start' : 'bottom-end'" :transfer="true">
                                     <span class="face-space"></span>
+                                    <span class="face-remove" @click.stop="removeFace(u)"><svg style="width: 15px; height: 15px;"><use xlink:href="#delIcon"></use></svg></span>
                                     <div class="msg-quote-tip" slot="content">
                                         <img :src="u">
                                     </div>
@@ -651,7 +659,7 @@
             </section>
         </section>
         <section class="chat-content" ref="chat-content">
-            <div v-for="(item, i) in content">
+            <div v-for="(item, i) in content" v-bind:key="item.oId">
                 <div class="redpacket-status" v-if="item.type == 'redPacketStatus'">
                     <svg><use xlink:href="#redPacketIcon"></use></svg> {{item.whoGot}} 抢到了 {{item.whoGive}} 的 <a href="#" @click="openRedpacket(item)">红包</a> ({{item.got}}/{{item.count}})
                 </div>
@@ -869,6 +877,9 @@
                 this.appendMsg(null, face);
                 this.emojiForm = false;
             },
+            async removeFace(u) {
+                this.faces = await emoji.remove(u, this.$root.token);
+            },
             async uploadFace(ev) {
                 let files = Array.from(ev.target.files)
                 let rsp = await this.$root.pwl.upload(files);
@@ -882,7 +893,7 @@
                     this.faces.push(fileData[d]);
                     emoji.push(null, fileData[d])
                 }
-                emoji.save();
+                emoji.save(this.$root.token);
             },
             async uploadImg(ev) {
                 let files = Array.from(ev.target.files)
@@ -973,14 +984,6 @@
                 this.menu = { [item.oId]: pos };
                 this.lastCursor = this.msgCursor();
             },
-            faceMenuShow(item, ev) {
-                let ele = this.$refs[`face-${item}`][0];
-                let pos = {
-                    x: ev.clientX - ele.offsetLeft,
-                    y: ev.clientY - ele.offsetTop
-                }
-                // this.faceMenu = { [item]: pos };
-            },
             async revokeMsg(id) {
                 let rsp = await this.$root.pwl.revoke(id);
                 if (!rsp) return;
@@ -1000,6 +1003,9 @@
                     await this.load(1);
                     await this.load(2);
                     await this.wsInit();
+                    await emoji.merge(this.$root.token);
+                    await emoji.load(this.$root.token);
+                    this.faces = emoji.urls;
                 }
             },
             async info() {
