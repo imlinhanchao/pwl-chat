@@ -16,6 +16,7 @@ import './theme/font-awesome.css'
 import './theme/highlight.css'
 import { ipcRenderer } from 'electron';
 
+
 Vue.use(iView)
 Vue.use(VueWorker)
 Vue.locale = () => {};

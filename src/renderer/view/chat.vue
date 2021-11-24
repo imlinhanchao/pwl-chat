@@ -659,7 +659,7 @@
             </section>
         </section>
         <section class="chat-content" ref="chat-content">
-            <div v-for="(item, i) in content" v-bind:key="item.oId">
+            <div v-for="(item, i) in content" v-bind:key="(item.type || 'msg') + '_' + item.oId + (item.whoGot || '')" :data-key="(item.type || 'msg') + '_' + item.oId + (item.whoGot || '')">
                 <div class="redpacket-status" v-if="item.type == 'redPacketStatus'">
                     <svg><use xlink:href="#redPacketIcon"></use></svg> {{item.whoGot}} 抢到了 {{item.whoGive}} 的 <a href="#" @click="openRedpacket(item)">红包</a> ({{item.got}}/{{item.count}})
                 </div>

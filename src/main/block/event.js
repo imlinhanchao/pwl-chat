@@ -3,11 +3,24 @@ import {
 } from 'electron'
 import windows from './windows'
 import fs from 'fs'
+import info from '../../../package.json'
+import axios from 'axios'
 
 let create = (app, win) => {
     let openfile = null;
     let index = process.argv.indexOf('-f');
     if (index > 0) openfile = process.argv[index + 1]
+
+    async function check_update() {
+        let rsp = await axios.get('https://gitee.com/api/v5/repos/imlinhanchao/pwl-chat/releases/latest');
+        return rsp.data;
+    }
+
+    ipcMain.on('win-update', async (event, argv) => {
+        let data = await check_update();
+        if (data.tag_name == info.version) data = null;
+        if(argv.callback) event.sender.send('win-update-callback-' + argv.callback, { data })
+    })
 
     ipcMain.on('win-close', (event, arg) => {
         app.quit()
@@ -74,6 +87,8 @@ let create = (app, win) => {
             console.error(err)
         }
     })
+
+    
 }
 
 export default {

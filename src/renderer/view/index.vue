@@ -2,7 +2,7 @@
 .layout {
     padding: 5px;
 }
-header {
+header.header {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
@@ -89,6 +89,39 @@ header {
     margin: auto;
     height: 2px;
 }
+.update-card {
+    overflow: hidden;
+    position: absolute;
+    width: 70vw;
+    top: 0; bottom: 0;
+    left: 0; right: 0;
+    margin: auto;
+    background: #131415;
+    box-shadow: 1px 1px 1px #aca49a;
+    border-radius: 10px;
+    height:50vh;
+    padding: 10px 10px 0;
+    display: flex;
+    flex-direction: column;
+    flex: 1 0 1;
+    z-index: 5000;
+    header {
+        text-align: center;
+        font-size: 2em;
+    }
+    .update-time {
+        font-size: .8em;
+        color: #454647;
+        text-align: center;
+    }
+    .update-note {
+        max-height: 40vh;
+        overflow: auto;
+    }
+    footer {
+        margin: 0 -10px 0px;
+    }
+}
 </style>
 <style lang="less">
 .control {
@@ -100,7 +133,7 @@ header {
 
 <template>
 <div class="layout">
-    <header class="drag">
+    <header class="drag header">
         <h1 class="drag"> <img src='../assets/icon.png' />
         <span id="win-title" class="drag">{{ $root.title || '摸鱼派'}}</span></h1>
         <span class="control no-drag">
@@ -113,6 +146,13 @@ header {
     <Content class="content">
         <router-view />
     </Content>
+    <section class="update-card" v-if="update">
+        <header class="update-header">{{update.name}}</header>
+        <section class="update-time">{{new Date(update.created_at).toLocaleString()}}</section>
+        <section class="update-note msg-contain" v-html="tohtml(update.body)">
+        </section>
+        <footer><Button type="success" long @click="openUpdate">更新</Button></footer>
+    </section>
     <footer>
         <div class="liveness liveness-top-left" :title="livenessTitle" :style="{ width: top + 'px', background: background }"></div>
         <div class="liveness liveness-top-right" :title="livenessTitle" :style="{ width: top + 'px', background: background }"></div>
@@ -125,6 +165,7 @@ header {
 
 <script>
   import { ipcRenderer } from 'electron'
+  import { marked } from 'marked';
 
   export default {
     name: 'home',
@@ -147,6 +188,7 @@ header {
             this.liveness = await this.$root.pwl.liveness();
             if (this.liveness >= 100) clearInterval(this.timer);
         }, 2000)
+        this.check_update();
     },
     data () {
         return {
@@ -157,7 +199,8 @@ header {
             screen: {
                 height: window.innerHeight - 2,
                 width: window.innerWidth - 2
-            }
+            },
+            update: null
         }
     },
     watch: {
@@ -209,6 +252,20 @@ header {
             this.opacity = !this.opacity;
             ipcRenderer.send('win-opacity', this.opacity)
             localStorage.setItem('window-opacity', this.opacity ? '1' : '0')
+        },
+
+        async check_update() {
+            let rsp = await this.$root.sendipcSync('win-update');
+            if (!rsp) return;
+            this.update = rsp.data;
+        },
+
+        tohtml (markdown) {
+            return marked(markdown, { sanitize: true })
+        },
+
+        openUpdate() {
+            window.open(`https://gitee.com/imlinhanchao/pwl-chat/releases/${this.update.tag_name}`)
         }
     }
   }
