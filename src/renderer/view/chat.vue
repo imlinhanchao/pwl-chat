@@ -1053,6 +1053,10 @@
                 let raw = await this.$root.pwl.raw(item.oId);
                 await this.wsSend(raw);
             },
+            toMusicBox(msg) {
+                if(msg.match(/https:\/\/music.163.com\/#\/song\?id=(\d+)/) == null) return msg;
+                return msg.replace(/https:\/\/music.163.com\/#\/song\?id=(\d+)/g, `<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=280 height=52 src="//music.163.com/outchain/player?type=2&id=$1&auto=0&height=32"></iframe>`)
+            },
             async wsPush(ev) {
                 if (this.currentSel >= 0) {
                     if (this.atList.length > 0) this.atUser(this.currentSel);
@@ -1060,6 +1064,7 @@
                     return;
                 }
                 if (!this.message) return;
+                this.message = this.toMusicBox(this.message);
                 if (this.quote) {
                     let raw = await this.$root.pwl.raw(this.quote.oId);
                     raw = raw.split('\n').map(r => `>${r}`).join('\n').trim();
