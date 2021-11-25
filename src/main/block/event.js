@@ -44,6 +44,7 @@ let create = (app, win) => {
             if (size.width < 400) { size.height = size.height * 400 / size.width; size.width = 400; }
             if (size.width > 800) { size.height = size.height * 800 / size.width; size.width = 800; }
             if (size.height > 600) { size.width = size.width * 600 / size.height; size.height = 600; }
+            if (size.height < 100) size.height += 150;
             windows.img(app, `/img/${encodeURIComponent(argv.url)}`, size)
         } catch (err) {
             console.error(err);
