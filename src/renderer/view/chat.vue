@@ -690,7 +690,7 @@
                             <div class="arrow" v-if="item.content.replace(/\n/g, '').match(/>[^<]+?</g)"/>
                             <div class="msg-content" v-html="formatContent(item.content)" v-if="item.content.replace(/\n/g, '').match(/>[^<]+?</g)"/>
                             <span class="msg-img" v-if="!item.content.replace(/\n/g, '').match(/>[^<]+?</g)" v-html="formatContent(item.content)"></span>
-                            <span class="plus-one" @click="followMsg(item)" v-if="i == 0 && item.content == content[i + 1].content">+1</span>
+                            <span class="plus-one" @click="followMsg(item)" v-if="firstMsg.content == secondMsg.content && item.oId == firstMsg.oId">+1</span>
                         </div>
                     </div>
                 </div>
@@ -709,18 +709,18 @@
             </header>
             <main class="redpacket-content">
                 <section>
-                    <p class="redpacket-current redpacket-money" v-if="redpacketData.who.find(w => w.userName == current.userName)">
-                        {{redpacketData.who.find(w => w.userName == current.userName).userMoney}} 积分
-                    </p>
-                    <p class="redpacket-current" v-if="!redpacketData.who.find(w => w.userName == current.userName)">
-                        错过了一个亿！
+                    <p class="redpacket-current redpacket-money">
+                        {{redpacketTitle}}
                     </p>
                 </section>
                 <section class="redpacket-list">
                     <ul>
                         <li v-for="w in redpacketData.who" :style="{ fontWeight: maxRedpacket == w.userMoney ? 'bolder' : 'normal' }">
                             <span class="redpacket-user"><Avatar :src="w.avatar" /> {{w.userName}}</span>
-                            <span class="redpacket-max redpacket-tip" v-if="maxRedpacket == w.userMoney">来自老王的认可</span>
+                            <span class="redpacket-max redpacket-tip" 
+                                v-if="redpacketData.who.find(w => w.userMoney == maxRedpacket).userName == w.userName 
+                                && redpacketData.info.got == redpacketData.info.count
+                                ">来自老王的认可</span>
                             <span class="redpacket-zero redpacket-tip" v-if="0 == w.userMoney">0 溢事件</span>
                             <span class="redpacket-money">{{w.userMoney}} 积分</span>
                         </li>
@@ -805,6 +805,17 @@
             },
             maxRedpacket() {
                 return this.redpacketData && Math.max(...this.redpacketData.who.map(a => a.userMoney))
+            },
+            redpacketTitle() {
+                let money = this.redpacketData.who.find(w => w.userName == this.current.userName);
+                if (!money) return '错过一个亿'
+                return money.userMoney == 0 ? '抢了个寂寞' : money.userMoney + '积分'
+            },
+            firstMsg() {
+                return this.content.find(item => !this.getRedPacket(item) && !item.whoGot)
+            },
+            secondMsg() {
+                return this.content.find(item => !this.getRedPacket(item) && !item.whoGot && item.oId != this.firstMsg.oId)
             }
         },
         methods: {
