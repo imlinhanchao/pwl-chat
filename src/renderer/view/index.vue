@@ -133,7 +133,7 @@ header.header {
 
 <template>
 <div class="layout">
-    <header class="drag header">
+    <header class="drag header" :title="'已摸鱼' + liveness + '%'">
         <h1 class="drag"> <img src='../assets/icon.png' />
         <span id="win-title" class="drag">{{ $root.title || '摸鱼派'}}</span></h1>
         <span class="control no-drag">
