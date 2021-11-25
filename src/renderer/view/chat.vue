@@ -28,7 +28,7 @@
     display: flex;
     flex-direction: row;
     position: relative;
-    max-width: 75vw;
+    max-width: 80vw;
     .msg-img {
         padding: 10px;
         display: inline-block;
@@ -38,10 +38,10 @@
         margin: auto 5px;
         font-weight: bolder;
         color: #FFF;
-        height: 1.8em;
-        width: 1.8em;
+        height: 25px;
+        width: 25px;
         background: #d23f31;
-        border-radius: 1em;
+        border-radius: 15px;
         text-align: center;
         cursor: pointer;
         font-family: mononoki,Consolas,"Liberation Mono",Menlo,Courier,monospace;
@@ -62,7 +62,7 @@
     padding: 8px 15px;
     color:#232425;
     word-break: break-word;
-    max-width: 100%;
+    max-width: calc(100% - 45px);
     overflow: auto;
 }
 .msg-current {
