@@ -675,7 +675,7 @@
                             <div class="msg-menu-item" v-if="isEmoji()" title="消息中插入该表情" @click="appendMsg(null, emojiCode(item.content))">{{emojiCode(item.content)}}</div>
                             <div class="msg-menu-item" v-if="!getRedPacket(item)" @click="quote = item">引用</div>
                         </div>
-                        <div class="redpacket-item" :title="getRedPacket(item).empty ? '红包已领完' : ''"
+                        <div class="redpacket-item" :title="getRedPacket(item).empty ? '红包已领完' : getRedPacket(item).readed ? '红包已领取' : ''"
                         :class="{'redpacket-empty': getRedPacket(item).empty || getRedPacket(item).readed}" 
                         v-if="!!getRedPacket(item)" @click="openRedpacket(item)">
                             <div class="arrow"/>
