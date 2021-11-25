@@ -676,7 +676,7 @@
                             <div class="msg-menu-item" v-if="!getRedPacket(item)" @click="quote = item">引用</div>
                         </div>
                         <div class="redpacket-item" :title="getRedPacket(item).empty ? '红包已领完' : ''"
-                        :class="{'redpacket-empty': getRedPacket(item).empty}" 
+                        :class="{'redpacket-empty': getRedPacket(item).empty || getRedPacket(item).readed}" 
                         v-if="!!getRedPacket(item)" @click="openRedpacket(item)">
                             <div class="arrow"/>
                             <div class="redpacket-content">
@@ -865,6 +865,7 @@
                 if (!rsp) return;
                 this.redpacketData = rsp;
                 console.dir(this.redpacketData);
+                item.readed = true;
             },
             isEmoji() {
                 return (this.menuTarget || { nodeName: '' }).nodeName.toLowerCase() == 'img'
@@ -924,6 +925,7 @@
                     let data = JSON.parse(item.content);
                     if (data.msgType != 'redPacket') return false;
                     data.empty = item.empty || data.got == data.count
+                    data.readed = item.readed || data.who.find(w => w.userName == this.current.userName)
                     return data;
                 } catch (e) {
                     return false;
@@ -1129,6 +1131,7 @@
                                 let c= this.content[i];
                                 if (c.oId != msg.oId || c.type == 'redPacketStatus') continue;
                                 this.content[i].empty = true;
+                                if(msg.whoGot == this.current.userName) this.content[i].readed = true;
                                 break;
                             }
                         }
