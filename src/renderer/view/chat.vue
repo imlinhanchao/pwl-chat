@@ -28,7 +28,7 @@
     display: flex;
     flex-direction: row;
     position: relative;
-    max-width: 80vw;
+    width: 80vw;
     .msg-img {
         padding: 10px;
         display: inline-block;
