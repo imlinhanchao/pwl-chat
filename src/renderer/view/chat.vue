@@ -311,6 +311,7 @@
     left: 0;
     bottom: 0;
     height: 400px;
+    max-height: 80vh;
     width:  250px;
     margin: auto;
     border-radius: 10px;
@@ -318,6 +319,7 @@
     padding: 10px;
     overflow: hidden;
     background: #f25745;
+    z-index: 100;
     header {
         position: relative;
         z-index: 2;
