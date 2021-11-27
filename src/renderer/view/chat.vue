@@ -209,6 +209,9 @@
                     top: -5px;
                     right: 5px;
                     font-size: .5em;
+                    .ivu-btn {
+                        padding: 0;
+                    }
                 }
                 img {
                     max-width: 100%;
@@ -598,9 +601,9 @@
                     </svg>
                 </Button>
                 <div class="redpacket-form" slot="content">
-                    <Form ref="redpacketForm" :model="redpacket" :label-width="40">
-                        <FormItem label="积分"><InputNumber  v-model="redpacket.money" :min="redpacket.count" placeholder="积分" /></FormItem>
-                        <FormItem label="个数"><InputNumber  v-model="redpacket.count" :min="1" placeholder="个数" /></FormItem>
+                    <Form ref="redpacketForm" :model="redpacket" :label-width="40" :show-message="false">
+                        <FormItem label="积分"><InputNumber  v-model="redpacket.money" :min="32" :max="20000" placeholder="积分" /></FormItem>
+                        <FormItem label="个数"><InputNumber  v-model="redpacket.count" :min="1" :max="1000" placeholder="个数" /></FormItem>
                         <FormItem label="留言"><Input v-model="redpacket.msg" placeholder="留言" /></FormItem>
                         <FormItem label="连发"><InputNumber  v-model="redpacket.times" :min="1" placeholder="连发" /></FormItem>
                         <FormItem label="间隔(s)"><InputNumber  v-model="redpacket.interval" :min="1" placeholder="秒" /></FormItem>
@@ -637,7 +640,16 @@
                                 @click="sendFace(emoji.get(u))">
                                 <Tooltip :placement="i % 4 < 3 ? 'bottom-start' : 'bottom-end'" :transfer="true">
                                     <span class="face-space"></span>
-                                    <span class="face-remove" @click.stop="removeFace(u)"><svg style="width: 15px; height: 15px;"><use xlink:href="#delIcon"></use></svg></span>
+                                    <span @click.stop="">
+                                        <Poptip  class="face-remove"
+                                        confirm transfer
+                                        title="你确定要删除这个表情吗？"
+                                        @on-ok="removeFace(u)">
+                                        <Button type="text"
+                                            ><svg style="width: 15px; height: 15px;"><use xlink:href="#delIcon"></use></svg>
+                                        </Button>
+                                        </Poptip>
+                                    </span>
                                     <div class="msg-quote-tip" slot="content">
                                         <img :src="u">
                                     </div>
