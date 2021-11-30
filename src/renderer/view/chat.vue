@@ -751,6 +751,8 @@
     import ipc from '../ipc'
     import ReconnectingWebSocket from "reconnecting-websocket";
     import emoji from '../emoji';
+    import fs from 'fs';
+    import {constructFileFromLocalFileData, LocalFileData} from 'get-file-object-from-local-path'
 
     export default {
         name: 'chat',
@@ -835,18 +837,31 @@
         methods: {
             async onPaste(ev) {
                 let items = ev.clipboardData && ev.clipboardData.items;
-                let file = null;
+                let file = [];
                 if (items && items.length) {
                     for (var i = 0; i < items.length; i++) {
                         if (items[i].type.indexOf('image') !== -1) {
-                            file = items[i].getAsFile();
+                            file.push(items[i].getAsFile());
                             break;
+                        }
+                        if (items[i].type.indexOf('html') !== -1) {
+                            let files = await this.htmlGetImg(items[i])
+                            files = files || []
+                            files = files.map(f => constructFileFromLocalFileData(new LocalFileData(f.replace(/file:\/\/\//g, ''))))
+                            file = file.concat(files);
                         }
                     }
                 }
-                if (!file) return;
+                if (file.length == 0) return;
                 this.lastCursor = this.msgCursor();
-                await this.uploadImg({ target: { files: [ file ]}});
+                await this.uploadImg({ target: { files: file}});
+            },
+            htmlGetImg(item) {
+                return new Promise((resolve) => {
+                    item.getAsString((html) => {
+                        resolve(html.match(/(?<=src=")([^"]+)/g))
+                    })
+                });
             },
             clear (ev) {
                 this.menu = {};
@@ -930,9 +945,10 @@
                     return;
                 }
                 let fileData = rsp.data.succMap;
-                let filename = Object.keys(fileData)[0]
+                let filenames = Object.keys(fileData)
+                
                 this.lastCursor = this.msgCursor();
-                this.appendMsg(null, `![${filename}](${fileData[filename]})`); 
+                this.appendMsg(null, filenames.map(f => `![${f}](${fileData[f]})`).join('')); 
             },
             getRedPacket(item) {
                 try {
