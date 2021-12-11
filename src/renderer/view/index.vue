@@ -239,7 +239,7 @@ header.header {
     <section class="update-card" v-if="update">
         <header class="update-header">{{update.name}}</header>
         <section class="update-time">{{new Date(update.created_at).toLocaleString()}}</section>
-        <section class="update-note msg-contain" v-html="tohtml(update.body)">
+        <section class="update-note md-style" v-html="tohtml(update.body)">
         </section>
         <footer><Button type="success" long @click="openUpdate">更新</Button></footer>
     </section>

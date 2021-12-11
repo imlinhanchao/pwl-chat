@@ -23,7 +23,7 @@ header {
             overflow:hidden;
             text-overflow:ellipsis;
             white-space:nowrap;
-            max-width: calc(100vw - 120px);
+            max-width: calc(100vw - 140px);
             display: inline-block;
         }
     }
