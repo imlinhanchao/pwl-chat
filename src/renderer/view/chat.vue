@@ -672,76 +672,7 @@
                 </Tabs>
             </section>
         </section>
-        <section class="chat-content" ref="chat-content">
-            <div v-for="(item, i) in content" v-bind:key="(item.type || 'msg') + '_' + item.oId + (item.whoGot || '')" :data-key="(item.type || 'msg') + '_' + item.oId + (item.whoGot || '')">
-                <div class="redpacket-status" v-if="item.type == 'redPacketStatus'">
-                    <svg><use xlink:href="#redPacketIcon"></use></svg> {{item.whoGot}} 抢到了 {{item.whoGive}} 的 <a href="#" @click="openRedpacket(item)">红包</a> ({{item.got}}/{{item.count}})
-                </div>
-                <div class="msg-item" v-if="item.content" :class="{'msg-current': item.userName == current.userName}" @contextmenu="menuShow(item, $event)">
-                    <div class="msg-avatar-box"><a target="_blank" :href="`https://pwl.icu/member/${item.userName}`"><Avatar class="msg-avatar" :src="item.userAvatarURL" /></a></div>
-                    <div :ref="`msg-${item.oId}`" :data-id="item.oId" class="msg-item-contain">
-                        <div class="msg-user" :title="item.userNickname">{{item.userName}}</div>
-                        <div class="msg-menu" :ref="`msg-menu-${item.oId}`" v-if="menu[item.oId]" :style="{ top: menu[item.oId].y + 'px', left: menu[item.oId].x + 'px' }">
-                            <div class="msg-menu-item" v-if="item.userName == current.userName" @click="revokeMsg(item.oId)">撤回</div>
-                            <div class="msg-menu-item" v-if="item.userName != current.userName" @click="atMsg(item)">@{{item.userName}}</div>
-                            <div class="msg-menu-item" v-if="hasFace(item.content)" @click="addFace">添加到表情包</div>
-                            <div class="msg-menu-item" v-if="!getRedPacket(item)" @click="followMsg(item)">复读一下</div>
-                            <div class="msg-menu-item" v-if="isEmoji()" title="消息中插入该表情" @click="appendMsg(null, emojiCode(item.content))">{{emojiCode(item.content)}}</div>
-                            <div class="msg-menu-item" v-if="!getRedPacket(item)" @click="quote = item">引用</div>
-                        </div>
-                        <div class="redpacket-item" :title="getRedPacket(item).empty ? '红包已领完' : getRedPacket(item).readed ? '红包已领取' : ''"
-                        :class="{'redpacket-empty': getRedPacket(item).empty || getRedPacket(item).readed}" 
-                        v-if="!!getRedPacket(item)" @click="openRedpacket(item)">
-                            <div class="arrow"/>
-                            <div class="redpacket-content">
-                                <svg class="redpacket-icon">
-                                    <use xlink:href="#redPacketIcon"></use>
-                                </svg>
-                                <div class="redpacket-msg">{{getRedPacket(item).msg}}</div>
-                            </div>
-                        </div>
-                        <div class="msg-contain" v-if="!getRedPacket(item)">
-                            <div class="arrow" v-if="item.content.replace(/\n/g, '').match(/>[^<]+?</g)"/>
-                            <div class="msg-content" v-html="formatContent(item.content)" v-if="item.content.replace(/\n/g, '').match(/>[^<]+?</g)"/>
-                            <span class="msg-img" v-if="!item.content.replace(/\n/g, '').match(/>[^<]+?</g)" v-html="formatContent(item.content)"></span>
-                            <span class="plus-one" @click="followMsg(item)" v-if="firstMsg && secondMsg && firstMsg.content == secondMsg.content && item.oId == firstMsg.oId">+1</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="msg-more" @click="load(page + 1)" v-if="content.length < 1999">
-                <Icon custom="fa fa-caret-down" v-if="!loading"/>
-                <Icon custom="fa fa-circle-o-notch fa-spin" v-if="loading"/>
-            </div>
-        </section>
-        <section class="redpacket" v-if="redpacketData != null">
-            <section class="redpacket-bg"></section>
-            <header>
-                <p class="redpacket-title"><Avatar :src="redpacketData.info.userAvatarURL" size="small"/> {{redpacketData.info.userName}} 的红包 </p>
-                <p class="redpacket-msg">{{redpacketData.info.msg}}</p>
-                <p class="redpacket-count">总计{{redpacketData.info.got}}/{{redpacketData.info.count}}</p>
-            </header>
-            <main class="redpacket-content">
-                <section>
-                    <p class="redpacket-current redpacket-money">
-                        {{redpacketTitle}}
-                    </p>
-                </section>
-                <section class="redpacket-list">
-                    <ul>
-                        <li v-for="w in redpacketData.who" :style="{ fontWeight: maxRedpacket == w.userMoney ? 'bolder' : 'normal' }">
-                            <span class="redpacket-user"><Avatar :src="w.avatar" /> {{w.userName}}</span>
-                            <span class="redpacket-max redpacket-tip" 
-                                v-if="redpacketData.who.find(w => w.userMoney == maxRedpacket).userName == w.userName 
-                                && redpacketData.info.got == redpacketData.info.count
-                                ">来自老王的认可</span>
-                            <span class="redpacket-zero redpacket-tip" v-if="0 == w.userMoney">0 溢事件</span>
-                            <span class="redpacket-money">{{w.userMoney}} 积分</span>
-                        </li>
-                    </ul>
-                </section>
-            </main>
-        </section>
+        <chat-content ref="content" :current="current" @message="appendMsg" @quote="quoteMsg" @cursor="msgCursor"></chat-content>
     </section>
 </article>
 </template>
@@ -751,12 +682,14 @@
     import ipc from '../ipc'
     import ReconnectingWebSocket from "reconnecting-websocket";
     import emoji from '../emoji';
-    import fs from 'fs';
     import {constructFileFromLocalFileData, LocalFileData} from 'get-file-object-from-local-path'
+    import chatContent from '../components/chat-content.vue'
 
     export default {
+  components: { chatContent },
         name: 'chat',
         component: {
+            chatContent
         },
         mounted () {
             this.$root.token = localStorage.getItem('token')
@@ -864,8 +797,7 @@
                 });
             },
             clear (ev) {
-                this.menu = {};
-                this.redpacketData = null;
+                this.$refs['content'].clear();
             },
             downloadFace() {
                 let data = emoji.urls.join('\n');
@@ -964,7 +896,10 @@
             msgCursor() {
                 return this.$refs['message'].$el.querySelector('input').selectionStart
             },
-            appendMsg(regexp, data){
+            quoteMsg(item) {
+                this.quote = item;
+            },
+            appendMsg({ regexp, data }){
                 let preMsg = this.message.slice(0, this.lastCursor)
                 if(regexp) preMsg = preMsg.replace(regexp, data);
                 else preMsg += data;

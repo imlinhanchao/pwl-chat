@@ -61,7 +61,7 @@
     "form-data": "^4.0.0",
     "get-file-object-from-local-path": "^1.0.2",
     "iview": "^3.4.2",
-    "marked": "^4.0.4",
+    "marked": "^4.0.7",
     "reconnecting-websocket": "^4.4.0",
     "sound-play": "^1.1.0",
     "spark-md5": "^3.0.2",
