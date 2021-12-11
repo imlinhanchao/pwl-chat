@@ -313,6 +313,14 @@
         }
     }
 }
+.msg-img {
+    img {
+        max-width: 80vw;
+    }
+    [alt="图片表情"] {
+        max-width: 100px;
+    }
+}
 .ivu-tooltip-popper {
     line-height: 1.2;
     blockquote {
