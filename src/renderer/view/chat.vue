@@ -192,6 +192,10 @@
     blockquote {
         line-height: 1;
     }
+    img {
+        max-width: 150px;
+        max-height: 150px;
+    }
 }
 .ivu-tag {
     height: 32px;
@@ -290,7 +294,7 @@
                                 class="face-item" v-for="(u, i) in faces" 
                                 :style="{ backgroundImage: `url(${u})`}" 
                                 @click="sendFace(emoji.get(u))">
-                                <Tooltip :placement="i % 4 < 3 ? 'bottom-start' : 'bottom-end'" :transfer="true">
+                                <Tooltip class="face-tip" :placement="i % 4 < 3 ? 'bottom-start' : 'bottom-end'" :transfer="true">
                                     <span class="face-space"></span>
                                     <span @click.stop="">
                                         <Poptip  class="face-remove"
@@ -467,7 +471,7 @@
             },
             sendFace(face) {
                 this.lastCursor = this.msgCursor();
-                this.appendMsg(null, face);
+                this.appendMsg({ regexp: null, data: face });
                 this.emojiForm = false;
             },
             async removeFace(u) {
@@ -500,7 +504,7 @@
                 let filenames = Object.keys(fileData)
                 
                 this.lastCursor = this.msgCursor();
-                this.appendMsg(null, filenames.map(f => `![${f}](${fileData[f]})`).join('')); 
+                this.appendMsg({ regexp: null, data: filenames.map(f => `![${f}](${fileData[f]})`).join('') }); 
             },
             msgCursor() {
                 return this.$refs['message'].$el.querySelector('input').selectionStart
@@ -523,7 +527,7 @@
                 let data = '@' + this.atList[i].userName + ' ';
                 this.atList = [];
                 this.currentSel = -1;
-                this.appendMsg(/@([^\s]*?)$/, data)
+                this.appendMsg({ regexp: /@([^\s]*?)$/, data })
             },
             selList(i) {
                 let len = this.atList.length || this.emojiList.length;
@@ -547,7 +551,7 @@
                 let data = emoji.get(this.emojiList[i].name);
                 this.emojiList = [];
                 this.currentSel = -1;
-                this.appendMsg(/:([^:]+?)$/, data)
+                this.appendMsg({ regexp: /:([^:]+?)$/, data })
             },
             getEmoji(name) {
                 if (!name || name.length < 1) return;
