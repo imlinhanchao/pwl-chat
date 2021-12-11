@@ -1,6 +1,9 @@
 <style lang="less" scoped>
 .layout {
     padding: 5px;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
 }
 header {
     display: flex;
@@ -30,10 +33,13 @@ header {
         }
     }
 }
+.img-content {
+    display: flex;
+    overflow: auto;
+}
 .img {
-    position: absolute;
-    left: 0; right: 0; top: 10px; bottom: 0; margin: auto;
     max-width: calc(100vw - 50px); max-height: calc(100vh - 80px);
+    margin: auto;
 }
 </style>
 
@@ -41,14 +47,14 @@ header {
 <div class="layout">
     <header class="drag">
         <h1 class="drag"> <img src='../assets/icon.png' />
-        <span id="win-title" class="drag" :title="imgName">{{ imageName }}</span></h1>
+        <span id="win-title" class="drag" :title="imageName">{{ imageName }}</span></h1>
         <span class="control no-drag">
-            <!-- <Button type="text" @click="handleOpen"><Icon custom="fa fa-external-link"></Icon></Button> -->
+            <Button type="text" @click="handleOpen"><Icon custom="fa fa-external-link"></Icon></Button>
             <Button type="text" @click="handleClose"><Icon custom="fa fa-times"></Icon></Button>
         </span>
     </header>
-    <Content>
-        <img class="img" v-if="image" :src="image" />
+    <Content class="img-content no-drag" ref="content">
+        <img @load="loadHandle" ref="img" class="img" v-if="image" :src="image" @wheel="wheelHandle" :style="{ width: width + 'px', maxWidth, maxHeight, margin }"/>
     </Content>
 </div>
 </template>
@@ -63,11 +69,16 @@ header {
     },
     mounted () {
         this.image = this.$route.params.imgpath;
-        document.title = path.basename(this.image)
+        document.title = path.basename(this.image);
+
     },
     data () {
         return {
             image: '',
+            width: undefined,
+            maxWidth: undefined,
+            maxHeight: undefined,
+            margin: 'auto'
         }
     },
     watch: {
@@ -78,14 +89,30 @@ header {
         imageName() {
             return this.image ? path.basename(this.image) : '';
         },
+        realWidth() {
+            return this.$refs['img'].width;
+        },
+        containWidth() {
+            return this.$refs['content'].$el.offsetWidth;
+        }
     },
     methods: {
+        loadHandle() {
+            this.width = this.realWidth
+        },
         handleClose() {
             window.close();
         },
 
         handleOpen() {
             window.open(this.image);
+        },
+        wheelHandle(ev) {
+            console.dir(ev.deltaY);
+            if (ev.deltaY < 0 && this.maxWidth < 20) return;
+            this.maxWidth = this.maxHeight = 'none';
+            this.width = Math.max(20, (this.width + ev.deltaY))
+            this.margin = 'auto ' + (this.containWidth - this.width) / 2 + 'px'
         }
     }
   }
