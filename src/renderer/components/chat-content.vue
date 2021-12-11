@@ -91,7 +91,7 @@
     overflow: hidden auto;
     margin-top: 5px;
 }
-.msg-menu, .face-menu {
+.msg-menu {
     position: absolute;
     background: #FFF;
     box-shadow: 1px 1px 3px #515a6e;
@@ -102,7 +102,7 @@
     flex-direction: column;
     overflow: hidden;
     z-index:50;
-    .msg-menu-item, .face-menu-item {
+    .msg-menu-item {
         padding: 5px 10px;
         word-break: keep-all;
         &:hover {
@@ -122,15 +122,7 @@
     visibility: hidden;
     position: absolute;
 }
-.content {
-    display: flex;
-    flex-direction: column;
-    height: calc(100vh - 55px);
-}
-.msg-control-list {
-    position: relative;
-    padding-left:36px;
-}    
+
 .msg-current {
     .redpacket-item {
         flex-direction: row-reverse;
@@ -176,13 +168,6 @@
         .redpacket-msg {
             color: #FFF;
         }
-    }
-}
-.msg-redpacket {
-    padding: 8px 0;
-    svg {
-        width: 25px;
-        height: 25px;
     }
 }
 .redpacket {
@@ -328,95 +313,6 @@
         }
     }
 }
-.msg-contain, .msg-quote-tip {
-    a {
-        border-bottom: 1px dashed #17233d;
-    }
-    img {
-        max-height: 60vh;
-        max-width: 40vw;
-        cursor: pointer;
-        background: #FFF;
-        &[alt='图片表情'] {
-            background: transparent;
-        }
-    }
-    ul, ol {
-        list-style-position: inside;
-    }
-    .msg-img {
-        img.emoji {
-            max-width: 40px;
-        }
-    }
-    img.emoji {
-        max-width: 20px;
-        cursor: auto;
-        vertical-align: middle;
-        background: transparent;
-    }
-    h1,h2 {
-        padding-bottom: .3em;
-        border-bottom: 1px solid #eaecef
-    }
-    
-    hr {
-        background-color: #eaecef
-    }
-    
-    blockquote {
-        color: #6a737d;
-        border-left: .25em solid #eaecef;
-        padding-left: 5px;
-    }
-    
-    iframe {
-        border: 1px solid #d1d5da
-    }
-    
-    table tr {
-        border-top: 1px solid #c6cbd1;
-        background-color: #fafbfc
-    }
-    
-    table td,.msg-contain table th {
-        border: 1px solid #dfe2e5
-    }
-    
-    table tbody tr:nth-child(2n) {
-        background-color: #fff
-    }
-    
-    code:not(.hljs):not(.highlight-chroma) {
-        background-color: rgba(27,31,35,.05)
-    }
-
-    pre,code {
-        width: 100%;
-        max-height: 300px;
-        overflow: auto;
-    }
-
-    pre>code {
-        margin: 0;
-        font-size: 85%;
-        padding: 0.5em;
-        border-radius: 5px;
-        display: block;
-        overflow: auto;
-        white-space: pre;
-        font-family: mononoki,Consolas,"Liberation Mono",Menlo,Courier,monospace;
-        word-break: initial;
-        word-wrap: normal
-    }
-    
-    kbd {
-        color: #24292e;
-        background-color: #fafbfc;
-        border: 1px solid #d1d5da;
-        box-shadow: inset 0 -1px 0 #d1d5da
-    }
-}
 .ivu-tooltip-popper {
     line-height: 1.2;
     blockquote {
@@ -428,7 +324,7 @@
     line-height: 32px;
     padding: 0 12px;
 }
-.msg-quote-tip, .msg-current
+.msg-current
 {
     blockquote {
         color: #c6cbd1;
@@ -467,7 +363,7 @@
                     </div>
                     <div class="msg-contain" v-if="!getRedPacket(item)">
                         <div class="arrow" v-if="item.content.replace(/\n/g, '').match(/>[^<]+?</g)"/>
-                        <div class="msg-content" v-html="formatContent(item.content)" v-if="item.content.replace(/\n/g, '').match(/>[^<]+?</g)"/>
+                        <div class="msg-content md-style" v-html="formatContent(item.content)" v-if="item.content.replace(/\n/g, '').match(/>[^<]+?</g)"/>
                         <span class="msg-img" v-if="!item.content.replace(/\n/g, '').match(/>[^<]+?</g)" v-html="formatContent(item.content)"></span>
                         <span class="plus-one" @click="followMsg(item)" v-if="firstMsg && secondMsg && firstMsg.content == secondMsg.content && item.oId == firstMsg.oId">+1</span>
                     </div>
@@ -531,23 +427,10 @@
                 page: 1,
                 content: [],
                 rws: null,
-                current: {},
-                atList: [],
-                emojiList: [],
-                currentSel: -1,
                 menu: {},
                 faceMenu: {},
                 loading: false,
-                lastCursor: 0,
-                quote: null,
                 menuTarget: null,
-                redpacket: {
-                    money: 32,
-                    count: 2,
-                    times: 1,
-                    interval: 1,
-                    msg: '摸鱼者，事竟成！'
-                },
                 redpacketData: null
             }
         },
@@ -604,11 +487,6 @@
                 else this.$Message.warning('表情已存在');
                 emoji.save();
             },
-            sendFace(face) {
-                this.lastCursor = this.msgCursor();
-                this.appendMsg(null, face);
-                this.emojiForm = false;
-            },
             getRedPacket(item) {
                 try {
                     let data = JSON.parse(item.content);
@@ -630,7 +508,7 @@
                 this.$emit('quote', item);
             },
             atMsg(item) {
-                this.lastCursor = this.msgCursor();
+                this.msgCursor();
                 this.appendMsg(null, `@${item.userName} `)
             },
             menuShow(item, ev) {
@@ -642,7 +520,7 @@
                     y: ev.clientY - ele.offsetTop + this.$refs['chat-content'].scrollTop
                 }
                 this.menu = { [item.oId]: pos };
-                this.lastCursor = this.msgCursor();
+                this.msgCursor();
             },
             async revokeMsg(id) {
                 let rsp = await this.$root.pwl.revoke(id);
@@ -703,7 +581,7 @@
             },
             async followMsg(item) {
                 let raw = await this.$root.pwl.raw(item.oId);
-                await this.wsSend(raw);
+                this.$emit('send', raw);
             },
             wsMessage(e) {
                 let msg = JSON.parse(e.data)

@@ -1,96 +1,4 @@
 <style lang="less" scoped>
-.msg-item{
-    display: flex;
-    flex-direction: row;
-}
-
-.msg-item-contain{
-    display: flex;
-    flex-direction: column;
-    max-width: 85%;
-    position: relative;
-}
-
-.msg-avatar {
-    width: 35px;
-    height: 35px;
-    border-radius: 35px;
-    margin-top: 1.5em;
-    cursor: pointer;
-}
-
-.msg-user{
-    margin-left: 1em;
-    font-size: .8em;
-}
-
-.msg-contain{
-    display: flex;
-    flex-direction: row;
-    position: relative;
-    width: 80vw;
-    .msg-img {
-        padding: 10px;
-        display: inline-block;
-    }
-    .plus-one {
-        font-size: .8em;
-        margin: auto 5px;
-        font-weight: bolder;
-        color: #FFF;
-        height: 25px;
-        width: 25px;
-        background: #d23f31;
-        border-radius: 15px;
-        text-align: center;
-        cursor: pointer;
-        font-family: mononoki,Consolas,"Liberation Mono",Menlo,Courier,monospace;
-    }
-}
-
-.arrow{
-    border: 5px solid transparent;
-    border-right: 5px solid #F6F8FA;
-    width: 0;
-    margin-top: 15px;
-    height: 0;
-}
-
-.msg-content{
-    background-color: #F6F8FA;
-    border-radius: 5px;
-    padding: 8px 15px;
-    color:#232425;
-    word-break: break-word;
-    max-width: calc(100% - 45px);
-    overflow: auto;
-}
-.msg-current {
-    flex-direction: row-reverse;
-    .msg-contain {
-        flex-direction: row-reverse;
-    }
-    .arrow {
-        border-right-color: transparent;
-        border-left-color: #515a6e;
-    }
-    .msg-content {
-        background-color: #515a6e;
-        color: #F6F8FA;
-    }
-    .msg-user {
-        text-align: right;
-        margin-right: 1em;
-    }
-    .plus-one {
-        left: -1.5em;
-        right: auto;
-    }
-}
-.chat-content {
-    overflow: hidden auto;
-    margin-top: 5px;
-}
 .chat-form {
     display: flex;
     position: relative;
@@ -154,10 +62,6 @@
     &:hover {
         color: #57a3f3;
     }
-}
-.hidden {
-    visibility: hidden;
-    position: absolute;
 }
 .content {
     display: flex;
@@ -249,170 +153,12 @@
 .msg-control-list {
     position: relative;
     padding-left:36px;
-}    
-.msg-current {
-    .redpacket-item {
-        flex-direction: row-reverse;
-        .arrow {
-            border-right-color: transparent;
-            border-left-color: #f90;
-        }
-        &.redpacket-empty {
-            .arrow {
-                border-right-color: transparent;
-                border-left-color: #fecd41;
-            }
-        }
-    }
-}
-
-.redpacket-item {
-    display: flex;
-    flex-direction: row;
-    cursor: pointer;
-    user-select: none;
-    &.redpacket-empty {
-        .redpacket-content {
-            background: #fecd41;
-        }
-        .arrow {
-            border-right-color: #fecd41;
-        }
-    }
-    .arrow {
-        border-right-color: #f90;
-    }
-    .redpacket-content{
-        display: inline-flex;
-        align-items: center;
-        background: #f90;
-        border-radius: 5px;
-        padding-right: 10px;
-        .redpacket-icon {
-            width: 64px;
-            height: 64px;
-        }
-        .redpacket-msg {
-            color: #FFF;
-        }
-    }
 }
 .msg-redpacket {
     padding: 8px 0;
     svg {
         width: 25px;
         height: 25px;
-    }
-}
-.redpacket {
-    position: absolute;
-    top: 50px;
-    right: 0;
-    left: 0;
-    bottom: 0;
-    height: 400px;
-    max-height: 80vh;
-    width:  250px;
-    margin: auto;
-    border-radius: 10px;
-    color: #fee3aa;
-    padding: 10px;
-    overflow: hidden;
-    background: #f25745;
-    z-index: 100;
-    header {
-        position: relative;
-        z-index: 2;
-        text-align: center;
-    }
-    .redpacket-bg {
-        border-radius: 300px;
-        width: 600px;
-        height: 600px;
-        border: 2px solid #f1ca74;
-        background: #f45e4d;
-        position: absolute;
-        top: -420px;
-        left: -175px;
-        z-index: 1;
-    }
-    .redpacket-msg {
-        color: #24292e;
-        font-size: .8em;
-    }
-    .redpacket-user {
-        width: calc(100% - 70px);
-        overflow:hidden;
-        text-overflow:ellipsis;
-        white-space:nowrap;
-    }
-    .redpacket-money {
-        color: #fee3aa;
-    }
-    .redpacket-content {
-        position: relative;
-        padding-top: 10px;
-        z-index: 2;
-        color: #000;
-        ul {
-            list-style: none;
-            padding: 0;
-            li {
-                margin: 10px 0;
-                display: flex;
-                justify-content: space-between;
-                position: relative;
-            }
-        }
-    }
-    .redpacket-current {
-        color: #fee3aa;
-        text-align: center;
-        font-size: 1.5em;
-        margin: 10px 0 30px;
-        &.redpacket-money {
-            font-size: 2em;
-            margin-top: 5px;
-        }
-    }
-    .redpacket-list {
-        height: 200px;
-        overflow: auto;
-        padding: 5px;
-    }
-    .redpacket-tip {
-        cursor: default;
-        position: absolute;
-        font-size: .6em;
-        padding: 0 5px;
-        left: 35px;
-        top: 2.5em;
-        border-radius: 5px;
-        background-color: #FFF;
-        border: 1px solid #D5D5D5;
-        font-weight: normal;
-        &.redpacket-max {
-            color: #fff;
-            background-color: #60b044;
-            border-color: #5ca941;
-        }
-        &.redpacket-zero {
-            color: #d23f31
-        }
-    }
-}
-.redpacket-status {
-    font-size: .8em;
-    text-align: center;
-    padding: 5px 0;
-    svg {
-        width: 15px;
-        height: 15px;
-        vertical-align: middle;
-    }
-    a {
-        color: #d23f31;
-        border-bottom: 1px dashed #d23f31;
     }
 }
 </style>
@@ -440,102 +186,7 @@
     border: 1px solid #d1d5da;
     border-top: 0;
 }
-.msg-current {
-    .msg-content {
-        a {
-            border-bottom: 1px dashed #F6F8FA;
-        }
-    }
-}
-.msg-contain, .msg-quote-tip {
-    a {
-        border-bottom: 1px dashed #17233d;
-    }
-    img {
-        max-height: 60vh;
-        max-width: 40vw;
-        cursor: pointer;
-        background: #FFF;
-        &[alt='图片表情'] {
-            background: transparent;
-        }
-    }
-    ul, ol {
-        list-style-position: inside;
-    }
-    .msg-img {
-        img.emoji {
-            max-width: 40px;
-        }
-    }
-    img.emoji {
-        max-width: 20px;
-        cursor: auto;
-        vertical-align: middle;
-        background: transparent;
-    }
-    h1,h2 {
-        padding-bottom: .3em;
-        border-bottom: 1px solid #eaecef
-    }
-    
-    hr {
-        background-color: #eaecef
-    }
-    
-    blockquote {
-        color: #6a737d;
-        border-left: .25em solid #eaecef;
-        padding-left: 5px;
-    }
-    
-    iframe {
-        border: 1px solid #d1d5da
-    }
-    
-    table tr {
-        border-top: 1px solid #c6cbd1;
-        background-color: #fafbfc
-    }
-    
-    table td,.msg-contain table th {
-        border: 1px solid #dfe2e5
-    }
-    
-    table tbody tr:nth-child(2n) {
-        background-color: #fff
-    }
-    
-    code:not(.hljs):not(.highlight-chroma) {
-        background-color: rgba(27,31,35,.05)
-    }
 
-    pre,code {
-        width: 100%;
-        max-height: 300px;
-        overflow: auto;
-    }
-
-    pre>code {
-        margin: 0;
-        font-size: 85%;
-        padding: 0.5em;
-        border-radius: 5px;
-        display: block;
-        overflow: auto;
-        white-space: pre;
-        font-family: mononoki,Consolas,"Liberation Mono",Menlo,Courier,monospace;
-        word-break: initial;
-        word-wrap: normal
-    }
-    
-    kbd {
-        color: #24292e;
-        background-color: #fafbfc;
-        border: 1px solid #d1d5da;
-        box-shadow: inset 0 -1px 0 #d1d5da
-    }
-}
 .ivu-tooltip-popper {
     line-height: 1.2;
     blockquote {
@@ -547,7 +198,7 @@
     line-height: 32px;
     padding: 0 12px;
 }
-.msg-quote-tip, .msg-current
+.msg-quote-tip
 {
     blockquote {
         color: #c6cbd1;
@@ -593,7 +244,6 @@
         </section>
         <section class="msg-control-list">
             <input type="file" name="images" accept="image/*" ref="file" v-show="false" @change="uploadImg">
-
             <Button type="text" class="msg-image msg-control" @click="$refs['file'].click()" title="上传图片"><Icon custom="fa fa-picture-o"/></Button>
             <Button type="text" class="msg-face msg-control" @click="emojiForm = !emojiForm" title="发表情"><Icon custom="fa fa-smile-o"/></Button>
             <Poptip ref="redpacketForm" title="发红包" placement="bottom" class="msg-control" >
@@ -618,7 +268,7 @@
             <Tooltip placement="bottom-start" v-if="quote" :max-width="innerWidth * .8">
                 <Tag closable @on-close="quote=null" color="success" v-if="quote">引用：@{{quote.userName}}</Tag>
                 <div slot="content">
-                    <div class="msg-quote-tip" v-html="quote.content"></div>
+                    <div class="msg-quote-tip md-style" v-html="quote.content"></div>
                 </div>
             </Tooltip>
             <section class="emoji-tab" v-show="emojiForm">
@@ -672,7 +322,7 @@
                 </Tabs>
             </section>
         </section>
-        <chat-content ref="content" :current="current" @message="appendMsg" @quote="quoteMsg" @cursor="msgCursor"></chat-content>
+        <chat-content v-if="current.userName" ref="content" :current="current" @send="wsSend" @message="appendMsg" @quote="quoteMsg" @cursor="msgCursor"></chat-content>
     </section>
 </article>
 </template>
@@ -680,7 +330,6 @@
 <script>
     import { ipcRenderer } from 'electron'
     import ipc from '../ipc'
-    import ReconnectingWebSocket from "reconnecting-websocket";
     import emoji from '../emoji';
     import {constructFileFromLocalFileData, LocalFileData} from 'get-file-object-from-local-path'
     import chatContent from '../components/chat-content.vue'
@@ -703,21 +352,15 @@
         },
         data () {
             return {
-                page: 1,
-                content: [],
                 message: '',
-                rws: null,
                 current: {},
                 atList: [],
                 emojiList: [],
                 currentSel: -1,
-                menu: {},
                 faceMenu: {},
-                loading: false,
                 lastCursor: 0,
                 quote: null,
                 emojiForm: false,
-                menuTarget: null,
                 faces: emoji.urls,
                 redpacket: {
                     money: 32,
@@ -726,7 +369,6 @@
                     interval: 1,
                     msg: '摸鱼者，事竟成！'
                 },
-                redpacketData: null
             }
         },
         watch: {
@@ -746,28 +388,30 @@
         filters: {
         },
         computed: {
-            innerWidth() {
-                return window.innerWidth
-            },
             emoji() {
                 return emoji;
             },
-            maxRedpacket() {
-                return this.redpacketData && Math.max(...this.redpacketData.who.map(a => a.userMoney))
-            },
-            redpacketTitle() {
-                let money = this.redpacketData.who.find(w => w.userName == this.current.userName);
-                if (!money) return '错过一个亿'
-                return money.userMoney == 0 ? '抢了个寂寞' : money.userMoney + '积分'
-            },
-            firstMsg() {
-                return this.content.find(item => !this.getRedPacket(item) && !item.whoGot)
-            },
-            secondMsg() {
-                return this.content.find(item => !this.getRedPacket(item) && !item.whoGot && item.oId != this.firstMsg.oId)
-            }
         },
         methods: {
+            async init() {
+                if(await this.info())
+                {
+                    await emoji.load(this.$root.token);
+                    this.faces = emoji.urls;
+                }
+            },
+            async info() {
+                let rsp = await this.$root.pwl.info(this.$root.token);
+                if (!rsp) return false;
+                if (rsp.code != 0) {
+                    localStorage.removeItem('token')
+                    this.$router.push('/');
+                    return false;
+                }
+                console.log(rsp)
+                this.current = rsp.data;
+                return true;
+            },
             async onPaste(ev) {
                 let items = ev.clipboardData && ev.clipboardData.items;
                 let file = [];
@@ -821,30 +465,6 @@
                 }, this.redpacket.interval * 1000)
                 this.$refs['redpacketForm'].handleClose();
             },
-            async openRedpacket(item) {
-                let rsp = await this.$root.pwl.openRedpacket(item.oId);
-                if (!rsp) return;
-                this.redpacketData = rsp;
-                console.dir(this.redpacketData);
-                item.readed = true;
-            },
-            isEmoji() {
-                return (this.menuTarget || { nodeName: '' }).nodeName.toLowerCase() == 'img'
-                && this.menuTarget.className == 'emoji';
-            },
-            emojiCode(content) {
-                return `:${content.match(/\/([^\/.]*?)(.gif|.png)/)[1]}:`
-            },
-            hasFace(content) {
-                return content.match(/<img/) != null 
-                && (this.menuTarget || { nodeName: '' }).nodeName.toLowerCase() == 'img'
-                && this.menuTarget.className != 'emoji'
-            },
-            addFace() {
-                if(emoji.push(null, this.menuTarget.src)) this.$Message.success('添加成功！');
-                else this.$Message.warning('表情已存在');
-                emoji.save();
-            },
             sendFace(face) {
                 this.lastCursor = this.msgCursor();
                 this.appendMsg(null, face);
@@ -882,17 +502,6 @@
                 this.lastCursor = this.msgCursor();
                 this.appendMsg(null, filenames.map(f => `![${f}](${fileData[f]})`).join('')); 
             },
-            getRedPacket(item) {
-                try {
-                    let data = JSON.parse(item.content);
-                    if (data.msgType != 'redPacket') return false;
-                    data.empty = item.empty || data.got == data.count
-                    data.readed = item.readed || data.who.find(w => w.userName == this.current.userName)
-                    return data;
-                } catch (e) {
-                    return false;
-                }
-            },
             msgCursor() {
                 return this.$refs['message'].$el.querySelector('input').selectionStart
             },
@@ -910,10 +519,6 @@
                     this.emojiList = this.atList = []
                 });
             },
-            atMsg(item) {
-                this.lastCursor = this.msgCursor();
-                this.appendMsg(null, `@${item.userName} `)
-            },
             atUser(i) {
                 let data = '@' + this.atList[i].userName + ' ';
                 this.atList = [];
@@ -928,7 +533,6 @@
             },
             async getAt(name) {
                 if (!name) return;
-                console.log(name)
                 let rsp = await this.$root.pwl.atlist(name);
                 if (!rsp) return;
                 if (rsp.code != 0) {
@@ -951,100 +555,9 @@
                 this.currentSel = -1;
                 this.lastCursor = this.msgCursor();
             },
-            menuShow(item, ev) {
-                this.menuTarget = ev.target;
-                console.dir(this.menuTarget)
-                let ele = this.$refs[`msg-${item.oId}`][0];
-                let pos = {
-                    x: ev.clientX - ele.offsetLeft,
-                    y: ev.clientY - ele.offsetTop + this.$refs['chat-content'].scrollTop
-                }
-                this.menu = { [item.oId]: pos };
-                this.lastCursor = this.msgCursor();
-            },
-            async revokeMsg(id) {
-                let rsp = await this.$root.pwl.revoke(id);
-                if (!rsp) return;
-                if (rsp.code != 0) {
-                    this.$Message.error(rsp.msg);
-                    return;
-                }
-                console.log(rsp);
-            },
-
-            formatContent(content) {
-                return content.replace(/(<a )/g, '$1target="_blank" ').replace(/(<img )/g, '$1data-action="preview" ');
-            },
-            async init() {
-                if(await this.info())
-                {
-                    await this.load(1);
-                    await this.load(2);
-                    await this.wsInit();
-                    await emoji.merge(this.$root.token);
-                    await emoji.load(this.$root.token);
-                    this.faces = emoji.urls;
-                }
-            },
-            async info() {
-                let rsp = await this.$root.pwl.info(this.$root.token);
-                if (!rsp) return false;
-                if (rsp.code != 0) {
-                    localStorage.removeItem('token')
-                    this.$router.push('/');
-                    return false;
-                }
-                console.log(rsp)
-                this.current = rsp.data;
-                return true;
-            },
-            async load(page) {
-                if (this.loading) return;
-                this.loading = true;
-                let rsp = await this.$root.pwl.history(page);
-                this.loading = false;
-                if (!rsp) return;
-                if (rsp.code != 0) {
-                    this.$Message.error(rsp.msg);
-                    return;
-                }
-                let oIds = this.content.map(c => c.oId);
-                let data = rsp.data.filter(d => oIds.indexOf(d.oId) < 0)
-                if(page > 1) this.content = this.content.concat(data);
-                else this.content = rsp.data;
-                this.page = page;
-            },
             logout() {
                 localStorage.removeItem('token');
                 this.$router.push('/');
-            },
-            wsInit() {
-                let that = this;
-                if (this.rws != null) this.rws.close();
-                this.rws = new ReconnectingWebSocket(`wss://pwl.icu/chat-room-channel?apiKey=${this.$root.token}`);
-                this.rws.reconnectInterval = 10000
-
-                this.rws.onopen = (e) => {
-                    console.log("onopen");
-                    setInterval(() => {
-                        that.rws.send('-hb-')
-                    }, 1000 * 60 * 3)
-                }
-                this.rws.onmessage = (e) => {
-                    that.wsMessage(e)
-                }
-                this.rws.onerror = (e) => {
-                    console.log("onerror");
-
-                }
-                this.rws.onclose = (e) => {
-                    console.log("onclose");
-                }
-                
-            },
-            async followMsg(item) {
-                let raw = await this.$root.pwl.raw(item.oId);
-                await this.wsSend(raw);
             },
             toMusicBox(msg) {
                 let songRegexp = /http(?:s):\/\/music.163.com\/(?:#\/|)song\?id=(\d+)(&[\w=]+)*/g;

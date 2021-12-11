@@ -724,7 +724,6 @@ let emojis = {
 }
 
 let faces = JSON.parse(localStorage.getItem('faces')) || {};
-faces['^faces'] = faces['^faces'] || { type: 'urls', url: []}
 faces['^syncs'] = faces['^syncs'] || { type: 'urls', url: []}
 emojis = Object.assign(emojis, faces);
 
@@ -744,16 +743,6 @@ export default {
     },
     getUrl (name) {
         return emoji[name].url;
-    },
-    async merge (token) {
-        if (!token || faces['^faces'].url.length == 0) return;
-        let pwl = new PWL(token);
-        let data = await pwl.emoji();
-        data = Array.from(new Set(data.concat(faces['^faces'].url)));
-        emojis['^syncs'] = faces['^syncs'] = { type: 'syncs', url: data }
-        faces['^faces'].url = [];
-        this.save();
-        await this.sync(token);
     },
     async sync (token) {
         if (!token) return;
