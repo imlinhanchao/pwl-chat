@@ -172,7 +172,8 @@ header.header {
     }
     
     iframe {
-        border: 1px solid #d1d5da
+        border: 1px solid #d1d5da;
+        width: 100%;
     }
     
     table tr {
