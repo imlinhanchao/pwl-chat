@@ -276,6 +276,7 @@ header.header {
         ipcRenderer.send('win-opacity', this.opacity)
         this.timer = setInterval(async () => {
             this.liveness = await this.$root.pwl.liveness();
+            if (this.liveness.code == 401) this.$root.relogin();
             if (this.liveness >= 100) clearInterval(this.timer);
         }, 2000)
         this.check_update();
