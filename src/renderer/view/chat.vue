@@ -587,6 +587,7 @@
                 }
                 await this.wsSend(this.message, false);
                 this.message = '';
+                this.$refs.content.$ele.scrollTo(0, 0);
                 return true;
             },
             wsMessage(e) {

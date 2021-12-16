@@ -16,6 +16,12 @@ let create = (app, win) => {
     let sound = path.join(__dirname, '..', '..', '..', 'audio', 'shake.wav')
     tray = new Tray(icon)
     const contextMenu = Menu.buildFromTemplate([{
+            label: 'Developer Tool',
+            type: 'normal',
+            click: () => {
+                win.main.webContents.openDevTools({mode:'detach'})
+            }
+        },{
             label: 'Show',
             type: 'normal',
             click: () => {

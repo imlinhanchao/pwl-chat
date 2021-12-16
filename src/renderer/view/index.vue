@@ -100,10 +100,9 @@ header.header {
     box-shadow: 1px 1px 1px #aca49a;
     border-radius: 10px;
     height:50vh;
-    padding: 10px 10px 0;
+    padding: 10px 0 0;
     display: flex;
     flex-direction: column;
-    flex: 1 0 1;
     z-index: 5000;
     header {
         text-align: center;
@@ -117,9 +116,15 @@ header.header {
     .update-note {
         max-height: 40vh;
         overflow: auto;
+        padding: 0 15px;
+    }
+    .update-progress {
+        background: #ed4014;
+        height: 5px;
+        margin: 0;
     }
     footer {
-        margin: 0 -10px 0px;
+        margin: 0;
     }
 }
 </style>
@@ -241,7 +246,8 @@ header.header {
         <section class="update-time">{{new Date(update.created_at).toLocaleString()}}</section>
         <section class="update-note md-style" v-html="tohtml(update.body)">
         </section>
-        <footer><Button type="success" long @click="openUpdate">更新</Button></footer>
+        <section v-if="progress > 0" :title="progress + '%'" class="update-progress" :style="{ width: progress + '%' }"></section>
+        <footer><Button type="success" long @click="startUpdate">{{state}}</Button></footer>
     </section>
     <footer>
         <div class="liveness liveness-top-left" :title="livenessTitle" :style="{ width: top + 'px', background: background }"></div>
@@ -277,9 +283,11 @@ header.header {
         this.timer = setInterval(async () => {
             this.liveness = await this.$root.pwl.liveness();
             if (this.liveness.code == 401) this.$root.relogin();
-            if (this.liveness >= 100) clearInterval(this.timer);
-        }, 2000)
+        }, 30000)
         this.check_update();
+        setInterval(async () => {
+            this.check_update();
+        }, 36000000)
     },
     data () {
         return {
@@ -291,7 +299,10 @@ header.header {
                 height: window.innerHeight - 2,
                 width: window.innerWidth - 2
             },
-            update: null
+            update: null,
+            progress: 0,
+            state: '更新',
+            updating: false
         }
     },
     watch: {
@@ -322,7 +333,7 @@ header.header {
         },
         size () {
             return this.screen.height + this.screen.width
-        }
+        },
     },
     methods: {
         handleClose() {
@@ -355,8 +366,30 @@ header.header {
             return marked(markdown, { sanitize: true })
         },
 
-        openUpdate() {
-            window.open(`https://gitee.com/imlinhanchao/pwl-chat/releases/${this.update.tag_name}`)
+        startUpdate() {
+            if (this.updating) return;
+            this.updating = true;
+            let file = this.update.assets.find(f => f.name == 'update-pack.zip');
+            let that = this;
+            if(file) {
+                this.$root.sendipc('update-app', {
+                    argv: { 
+                    name: file.name, 
+                    url: file.browser_download_url 
+                }, fn: (ev, data) => {
+                    if (data.state == 'data'){
+                        that.progress = data.pro;
+                        that.state = '下载中' + (that.progress > 0 ? `(${that.progress}%)` : '');
+                    }
+                    else if(data.state == 'finish') {
+                        that.state = '下载完成，等待更新'
+                    }
+                    else if(data.state == 'done') {
+                        that.state = '更新完成，请重启生效'
+                    }
+                }});
+            }
+            else window.open(`https://gitee.com/imlinhanchao/pwl-chat/releases/${this.update.tag_name}`)
         }
     }
   }

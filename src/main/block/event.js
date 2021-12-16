@@ -3,14 +3,90 @@ import {
 } from 'electron'
 import windows from './windows'
 import fs from 'fs'
+import path from 'path'
+import os from 'os'
 import info from '../../../package.json'
 import axios from 'axios'
+import https from 'https'
+import unzip from 'node-unzip-2'
+import { exec } from 'child_process'
+
+ const downloadFile = (url, dest, cb = () =>{}) => {
+    // 确保dest路径存在
+    const file = fs.createWriteStream(dest)
+    const urlImage = url;
+    
+    https.get(urlImage, (res) => {
+      if (res.statusCode == 302)
+      {
+        downloadFile(res.headers.location, dest, cb)
+        return
+      }
+      else if (res.statusCode !== 200) {
+        cb(res.statusCode)
+        return
+      }
+  
+      // 进度
+      const len = parseInt(res.headers['content-length']) // 文件总长度
+      let cur = 0
+      const total = (len / 1048576).toFixed(2) // 转为M 1048576 - bytes in  1Megabyte
+      res.on('data', function (chunk) {
+        let progress;
+        if (!isNaN(total)) {
+            cur += chunk.length
+            progress = (100.0 * cur / len).toFixed(2) // 当前进度
+        } else {
+            progress = -1;
+        }
+        const currProgress = (cur / 1048576).toFixed(2) // 当前了多少
+        cb('data', progress, currProgress, total)
+      })
+  
+      res.on('end', () => {
+        cb('download')
+      })
+  
+      // 超时,结束等
+      file.on('finish', () => {
+        file.close()
+        cb('finish', url)
+      }).on('error', (err) => {
+        fs.unlink(dest)
+        if (cb) cb('error', err.message)
+      })
+      res.pipe(file)
+    })
+}
+  
+function updateApp(file, cb) {
+    let asarPath = path.resolve(__dirname, '..', '..', '..', 'app.asar');
+    fs.createReadStream(file)
+    .pipe(unzip.Parse())
+    .on('entry', (entry) => {
+        const writer = fs.createWriteStream(asarPath + '.new')
+        entry.pipe(writer);
+        writer.on('finish', () => {
+            try {
+                if(fs.existsSync(asarPath)) fs.unlinkSync(asarPath);
+                fs.renameSync(asarPath + '.new', asarPath);
+                cb('done');
+            } catch (error) {
+                fs.writeFileSync(path.resolve(__dirname, '..', '..', '..', 'update.bat'), `@echo off
+taskkill /im PWL.exe /F
+copy ${asarPath + '.new'} ${asarPath}  /y
+if %errorlevel% == 0 (
+del ${asarPath + '.new'} /f
+)
+                `)
+                exec(path.join(__dirname, '..', '..', '..', 'update.bat'));
+                cb('fail');
+            };
+        });
+    });
+}
 
 let create = (app, win) => {
-    let openfile = null;
-    let index = process.argv.indexOf('-f');
-    if (index > 0) openfile = process.argv[index + 1]
-
     async function check_update() {
         let rsp = await axios.get('https://gitee.com/api/v5/repos/imlinhanchao/pwl-chat/releases/latest');
         return rsp.data;
@@ -89,7 +165,26 @@ let create = (app, win) => {
         }
     })
 
-    
+    ipcMain.on('update-app', (event, argv) => {
+        try
+        {
+            let savaPath = path.resolve(os.tmpdir(), argv.data.name);
+            downloadFile(argv.data.url, savaPath, (state, pro, currPro, total) => {
+                if (state == 'data') {
+                    console.log(pro, currPro, total)
+                    if(argv.callback) event.sender.send('update-app-callback-' + argv.callback, { state, pro, currPro, total })
+                }
+                else if(state == 'finish') {
+                    if(argv.callback) event.sender.send('update-app-callback-' + argv.callback, { state })
+                    updateApp(savaPath, (state) => {
+                        event.sender.send('update-app-callback-' + argv.callback, { state })
+                    });
+                }
+              })
+        } catch (err) {
+            console.error(err)
+        }
+    });
 }
 
 export default {

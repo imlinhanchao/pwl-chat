@@ -1,6 +1,6 @@
 {
   "name": "pwl-app",
-  "version": "1.0.13",
+  "version": "1.0.12",
   "author": "Hancel.Lin",
   "description": "摸鱼派聊天室",
   "license": "MIT",
@@ -62,6 +62,7 @@
     "get-file-object-from-local-path": "^1.0.2",
     "iview": "^3.4.2",
     "marked": "^4.0.7",
+    "node-unzip-2": "^0.2.8",
     "reconnecting-websocket": "^4.4.0",
     "sound-play": "^1.1.0",
     "spark-md5": "^3.0.2",
