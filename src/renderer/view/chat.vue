@@ -237,6 +237,7 @@
                     icon="md-send"
                     @click="wsPush"
                     style="box-shadow:none;"
+                    :loading="sending"
                 ></Button>
             </Input>
             <section class="at-list" v-if="atList.length">
@@ -373,6 +374,7 @@
                     interval: 1,
                     msg: '摸鱼者，事竟成！'
                 },
+                sending: false
             }
         },
         watch: {
@@ -577,6 +579,7 @@
                     return;
                 }
                 if (!this.message) return;
+                this.sending = true;
                 this.message = this.toMusicBox(this.message);
                 if (this.quote) {
                     let raw = await this.$root.pwl.raw(this.quote.oId);
@@ -588,6 +591,7 @@
                 await this.wsSend(this.message, false);
                 this.message = '';
                 this.$refs.content.$ele.scrollTo(0, 0);
+                this.sending = false;
                 return true;
             },
             wsMessage(e) {
