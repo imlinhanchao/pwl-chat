@@ -126,8 +126,8 @@
             .msg-quote-tip {
                 img {
                     width: auto;
-                    max-width: 150px;
-                    max-height: 150px;
+                    max-width: 100px;
+                    max-height: 100px;
                 }
             }
         }
@@ -154,8 +154,28 @@
     position: relative;
     padding-left:36px;
 }
+.redpacket-form {
+    .ivu-form-item {
+        margin-bottom: 5px;
+    }
+    .user-list {
+        max-width: 80vw;
+        max-height: 6em;
+        overflow: auto;
+        .user-item {
+            display: inline-block;
+            margin: 2px;
+        }
+        .user-check {
+            .ivu-avatar-image {
+                border: 2px inset #fd2121;
+                box-shadow: 0 0 5px #fd2121;
+            }
+        }
+    }
+}
 .msg-redpacket {
-    padding: 8px 0;
+    padding: 8px;
     svg {
         width: 25px;
         height: 25px;
@@ -207,6 +227,12 @@
     blockquote {
         color: #c6cbd1;
     }
+    img {
+        width: auto;
+        max-width: 200px;
+        max-height: 200px;
+    }
+
 }
 </style>
 
@@ -251,24 +277,41 @@
             <input type="file" name="images" accept="image/*" ref="file" v-show="false" @change="uploadImg">
             <Button type="text" class="msg-image msg-control" @click="$refs['file'].click()" title="上传图片"><Icon custom="fa fa-picture-o"/></Button>
             <Button type="text" class="msg-face msg-control" @click="emojiForm = !emojiForm" title="发表情"><Icon custom="fa fa-smile-o"/></Button>
-            <Poptip ref="redpacketForm" title="发红包" placement="bottom" class="msg-control" >
-                <Button type="text" class="msg-redpacket" title="发红包">
-                    <svg class="redpacket-icon">
-                        <use xlink:href="#redPacketIcon"></use>
-                    </svg>
-                </Button>
-                <div class="redpacket-form" slot="content">
-                    <Form ref="redpacketForm" :model="redpacket" :label-width="40" :show-message="false">
-                        <FormItem label="积分"><InputNumber  v-model="redpacket.money" :min="32" :max="20000" placeholder="积分" /></FormItem>
-                        <FormItem label="个数"><InputNumber  v-model="redpacket.count" :min="1" :max="1000" placeholder="个数" /></FormItem>
-                        <FormItem label="留言"><Input v-model="redpacket.msg" placeholder="留言" /></FormItem>
-                        <FormItem label="连发"><InputNumber  v-model="redpacket.times" :min="1" placeholder="连发" /></FormItem>
-                        <FormItem label="间隔(s)"><InputNumber  v-model="redpacket.interval" :min="1" placeholder="秒" /></FormItem>
-                        <FormItem>
-                            <Button type="error" @click="sendRedpacket">发送</Button>
-                        </FormItem>
-                    </Form>
+            <Button type="text" class="msg-redpacket msg-control" title="发红包" @click="redpacketForm=!redpacketForm">
+                <svg class="redpacket-icon">
+                    <use xlink:href="#redPacketIcon"></use>
+                </svg>
+            </Button>
+            <Modal 
+                v-model="redpacketForm" 
+                title="发红包"
+                class="redpacket-form">
+                <Form ref="redpacketForm" :model="redpacket" :label-width="50" :show-message="false">
+                    <FormItem label="类型">
+                        <Select v-model="redpacket.type">
+                            <Option v-for="item in redpacketType" :value="item.value" :key="item.value">{{ item.label }}</Option>
+                        </Select>
+                    </FormItem>
+                    <FormItem label="发给谁" v-if="redpacket.type == 'specify'">
+                        <section class="user-list">
+                            <span v-for="u in onlineList" @click="reciverCheck(u)"
+                                class="user-item" 
+                                :title="u.userName" 
+                                :class="{ 'user-check': redpacket.recivers.indexOf(u.userName) >= 0 }">
+                                <Avatar :src="u.userAvatarURL"></Avatar>
+                            </span>
+                        </section>
+                    </FormItem>
+                    <FormItem label="积分"><InputNumber v-model="redpacket.money" :min="32" :max="20000" placeholder="积分" /></FormItem>
+                    <FormItem label="个数"><InputNumber v-model="redpacket.count" :min="1" :max="1000" placeholder="个数" /></FormItem>
+                    <FormItem label="留言"><Input v-model="redpacket.msg" :placeholder="defaultRedpackWord[redpacket.type]" /></FormItem>
+                    <FormItem label="连发"><InputNumber v-model="redpacket.times" :min="1" placeholder="连发" /></FormItem>
+                    <FormItem label="间隔(s)"><InputNumber v-model="redpacket.interval" :min="1" placeholder="秒" /></FormItem>
+                </Form>
+                <div slot="footer">
+                    <Button type="error" @click="sendRedpacket">发送</Button>
                 </div>
+            </Modal>
             </Poptip>
             <Tooltip placement="bottom-start" v-if="quote" :max-width="innerWidth * .8">
                 <Tag closable @on-close="quote=null" color="success" v-if="quote">引用：@{{quote.userName}}</Tag>
@@ -327,7 +370,7 @@
                 </Tabs>
             </section>
         </section>
-        <chat-content v-if="current.userName" ref="content" :current="current" @send="wsSend" @message="appendMsg" @quote="quoteMsg" @cursor="msgCursor"></chat-content>
+        <chat-content @wsMessage="wsMessage" v-if="current.userName" ref="content" :current="current" @send="wsSend" @message="appendMsg" @quote="quoteMsg" @cursor="msgCursor"></chat-content>
     </section>
 </article>
 </template>
@@ -359,6 +402,7 @@
             return {
                 message: '',
                 current: {},
+                onlineList: [],
                 atList: [],
                 emojiList: [],
                 currentSel: -1,
@@ -368,13 +412,16 @@
                 emojiForm: false,
                 faces: emoji.urls,
                 redpacket: {
+                    type: 'random',
                     money: 32,
                     count: 2,
                     times: 1,
                     interval: 1,
-                    msg: '摸鱼者，事竟成！'
+                    msg: '',
+                    recivers: []
                 },
-                sending: false
+                sending: false,
+                redpacketForm: false
             }
         },
         watch: {
@@ -397,6 +444,22 @@
             emoji() {
                 return emoji;
             },
+            redpacketType() {
+                return [
+                    { label: '拼手气红包', value: 'random' },
+                    { label: '普通红包', value: 'average' },
+                    { label: '专属红包', value: 'specify' },
+                    { label: '心跳红包', value: 'heartbeat' },
+                ]
+            },
+            defaultRedpackWord() {
+                return {
+                    random: '摸鱼者，事竟成！',
+                    average: '平分红包，人人有份！',
+                    specify: '试试看，这是给你的红包吗？',
+                    heartbeat: '玩的就是心跳！'
+                }
+            }
         },
         methods: {
             async init() {
@@ -414,7 +477,6 @@
                     this.$router.push('/');
                     return false;
                 }
-                console.log(rsp)
                 this.current = rsp.data;
                 return true;
             },
@@ -461,15 +523,25 @@
             },
             async sendRedpacket() {
                 if (this.redpacket.count <= 0) return;
+                if (this.redpacket.type == 'specify' && this.redpacket.recivers.length == 0) {
+                    this.$Message.error('请至少选择一个人收红包');
+                    return;
+                }
                 let redpacket = Object.assign({}, this.redpacket);
                 redpacket.msg = redpacket.msg || '摸鱼者，事竟成！';
-                let data = { msg: redpacket.msg, money: redpacket.money, count: redpacket.count } 
+                let data = { 
+                    msg: redpacket.msg, money: 
+                    redpacket.money, 
+                    count: redpacket.count,
+                    recivers: redpacket.recivers,
+                    type: redpacket.type
+                } 
                 let timer = setInterval(async () => {
                     let message = `[redpacket]${JSON.stringify(data)}[/redpacket]`
                     await this.wsSend(message);
                     if (--redpacket.times == 0) clearInterval(timer);
                 }, this.redpacket.interval * 1000)
-                this.$refs['redpacketForm'].handleClose();
+                this.redpacketForm = false;
             },
             sendFace(face) {
                 this.lastCursor = this.msgCursor();
@@ -599,32 +671,8 @@
                 
                 switch (msg.type) {
                     case "online":  //在线人数
-                        console.log(msg);
                         document.getElementById('win-title').innerHTML = `摸鱼派 - 聊天室(${msg.onlineChatCnt})`
-                        break;
-                    case "revoke":  //撤回
-                        console.log(msg);
-                        for (let i = 0; i < this.content.length; i++) {
-                            let c= this.content[i];
-                            if (c.oId != msg.oId) continue;
-                            this.content.splice(i, 1);
-                            break;
-                        }
-                        break;
-                    case "msg":  //消息
-                    case "redPacketStatus":
-                        this.content.splice(0, 0, msg)
-                        if (this.content.length > 2000) this.load(1);
-                        if(msg.type == 'msg') ipcRenderer.send('sys-msg', msg);
-                        else if (msg.count == msg.got) {
-                            for (let i = 0; i < this.content.length; i++) {
-                                let c= this.content[i];
-                                if (c.oId != msg.oId || c.type == 'redPacketStatus') continue;
-                                this.content[i].empty = true;
-                                if(msg.whoGot == this.current.userName) this.content[i].readed = true;
-                                break;
-                            }
-                        }
+                        this.onlineList = msg.users;
                         break;
                 }
             },
@@ -641,6 +689,11 @@
                     this.$Message.error(rsp.msg);
                     return false;
                 }
+            },
+            reciverCheck(user) {
+                let index = this.redpacket.recivers.indexOf(user.userName);
+                if(index < 0) this.redpacket.recivers.push(user.userName);
+                else this.redpacket.recivers.splice(index, 1);
             }
         }
     }

@@ -74,13 +74,15 @@ function updateApp(file, cb) {
             } catch (error) {
                 fs.writeFileSync(path.resolve(__dirname, '..', '..', '..', 'update.bat'), `@echo off
 taskkill /im PWL.exe /F
-copy ${asarPath + '.new'} ${asarPath}  /y
+copy "${asarPath + '.new'}" "${asarPath}"  /y
 if %errorlevel% == 0 (
-del ${asarPath + '.new'} /f
+del "${asarPath + '.new'}" /f
+start "${path.resolve(__dirname, '..', '..', 'PWL.exe')}"
 )
                 `)
                 exec(path.join(__dirname, '..', '..', '..', 'update.bat'));
                 cb('fail');
+                process.exit(0);
             };
         });
     });
@@ -171,7 +173,6 @@ let create = (app, win) => {
             let savaPath = path.resolve(os.tmpdir(), argv.data.name);
             downloadFile(argv.data.url, savaPath, (state, pro, currPro, total) => {
                 if (state == 'data') {
-                    console.log(pro, currPro, total)
                     if(argv.callback) event.sender.send('update-app-callback-' + argv.callback, { state, pro, currPro, total })
                 }
                 else if(state == 'finish') {

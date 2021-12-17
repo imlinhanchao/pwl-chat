@@ -107,7 +107,33 @@ i.fa-help {
     color: #2d8cf0;
 }
 
-.ivu-input {
+.ivu-modal-content {
+    background-color: #131415;
+}
+
+.ivu-modal-header-inner {
+    color: #aca49a;
+}
+
+.ivu-select-selection, .ivu-select-dropdown {
+    background-color: #181a1b;
+    color: #aca49a;
+    border-color: #393e40;
+}
+.ivu-modal-header {
+    border-bottom-color: #393e40;
+}
+.ivu-modal-footer {
+    border-top-color: #393e40;
+}
+.ivu-select-item {
+    color: #aca49a;
+}
+.ivu-input-number-handler-wrap {
+    background-color: #181a1b;
+    border-color: #393e40;
+}
+.ivu-input, .ivu-input-number, input {
     border-color: #393e40;
     color: #aca49a;
     background-color: #181a1b;

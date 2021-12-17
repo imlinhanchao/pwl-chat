@@ -12,7 +12,6 @@ class Windows {
         session.defaultSession.webRequest.onBeforeSendHeaders({
             urls: ['*.pwl.stackoverflow.wiki/*']
           }, (details, cb) => {
-            console.log(details)
             details.requestHeaders['referer'] = 'https://pwl.icu/'
             let data = { requestHeaders: details.requestHeaders }
             cb(data)

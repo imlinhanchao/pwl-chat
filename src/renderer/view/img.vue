@@ -108,10 +108,9 @@ header {
             window.open(this.image);
         },
         wheelHandle(ev) {
-            console.dir(ev.deltaY);
-            if (ev.deltaY < 0 && this.maxWidth < 20) return;
+            if (ev.deltaY > 0 && this.maxWidth < 20) return;
             this.maxWidth = this.maxHeight = 'none';
-            this.width = Math.max(20, (this.width + ev.deltaY))
+            this.width = Math.max(20, (this.width - ev.deltaY))
             this.margin = 'auto ' + (this.containWidth - this.width) / 2 + 'px'
         }
     }

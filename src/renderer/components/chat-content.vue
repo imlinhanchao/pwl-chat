@@ -455,9 +455,24 @@
                 return this.redpacketData && Math.max(...this.redpacketData.who.map(a => a.userMoney))
             },
             redpacketTitle() {
-                let money = this.redpacketData.who.find(w => w.userName == this.current.userName);
-                if (!money) return '错过一个亿'
-                return money.userMoney == 0 ? '抢了个寂寞' : money.userMoney + '积分'
+                let money = this.redpacketData.who.find(
+                    (w) => w.userName == this.current.userName
+                );
+                this.redpacketData.recivers = this.redpacketData.recivers || [];
+                let specify = (this.redpacketData.recivers.length && this.redpacketData.recivers.indexOf(this.current.userName) >= 0)
+                let msg;
+                if (this.redpacketData.recivers.length && !specify) {
+                    msg = "会错意了"
+                } else if (!money) {
+                    msg = "错过一个亿";
+                } else {
+                    msg =
+                        money.userMoney == 0
+                        ? "抢了个寂寞"
+                        : `${money.userMoney} 积分`;
+                }
+
+                return msg
             },
             firstMsg() {
                 return this.content.find(item => !this.getRedPacket(item) && !item.whoGot)
@@ -475,7 +490,6 @@
                 let rsp = await this.$root.pwl.openRedpacket(item.oId);
                 if (!rsp) return;
                 this.redpacketData = rsp;
-                console.dir(this.redpacketData);
                 item.readed = true;
             },
             isEmoji() {
@@ -521,7 +535,6 @@
             },
             menuShow(item, ev) {
                 this.menuTarget = ev.target;
-                console.dir(this.menuTarget)
                 let ele = this.$refs[`msg-${item.oId}`][0];
                 let pos = {
                     x: ev.clientX - ele.offsetLeft,
@@ -537,10 +550,10 @@
                     this.$Message.error(rsp.msg);
                     return;
                 }
-                console.log(rsp);
             },
             formatContent(content) {
-                return content.replace(/(<a )/g, '$1target="_blank" ').replace(/(<img )/g, '$1data-action="preview" ');
+                return content.replace(/(<a )/g, '$1target="_blank" ')
+                    .replace(/(<img )/g, '$1data-action="preview" ');
             },
             async init() {
                 await this.load(1);
@@ -570,7 +583,6 @@
                 this.rws.reconnectInterval = 10000
 
                 this.rws.onopen = (e) => {
-                    console.log("onopen");
                     setInterval(() => {
                         that.rws.send('-hb-')
                     }, 1000 * 60 * 3)
@@ -579,11 +591,9 @@
                     that.wsMessage(e)
                 }
                 this.rws.onerror = (e) => {
-                    console.log("onerror");
-
+                    console.log('rws error', e.message);
                 }
                 this.rws.onclose = (e) => {
-                    console.log("onclose");
                 }
                 
             },
@@ -593,14 +603,12 @@
             },
             wsMessage(e) {
                 let msg = JSON.parse(e.data)
-                
+                this.$emit('wsMessage', e);
                 switch (msg.type) {
                     case "online":  //在线人数
-                        console.log(msg);
                         document.getElementById('win-title').innerHTML = `摸鱼派 - 聊天室(${msg.onlineChatCnt})`
                         break;
                     case "revoke":  //撤回
-                        console.log(msg);
                         for (let i = 0; i < this.content.length; i++) {
                             let c= this.content[i];
                             if (c.oId != msg.oId) continue;
