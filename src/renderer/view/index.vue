@@ -249,8 +249,10 @@ header.header {
         <section class="update-time">{{new Date(update.created_at).toLocaleString()}}</section>
         <section class="update-note md-style" v-html="tohtml(update.body)">
         </section>
-        <section v-if="progress > 0" :title="progress + '%'" class="update-progress" :style="{ width: progress + '%' }"></section>
-        <footer><Button type="success" long @click="startUpdate">{{state}}</Button></footer>
+        <footer>
+            <section v-if="progress > 0" :title="progress + '%'" class="update-progress" :style="{ width: progress + '%' }"></section>
+            <Button type="success" long @click="startUpdate">{{state}}</Button>
+        </footer>
     </section>
     <footer>
         <div class="liveness liveness-top-left" :title="livenessTitle" :style="{ width: top + 'px', background: background }"></div>
@@ -372,7 +374,7 @@ header.header {
         startUpdate() {
             if (this.updating) return;
             this.updating = true;
-            let file = this.update.assets.find(f => f.name == 'update-pack.zip');
+            let file = this.update.assets.find(f => f.name == 'update-file.zip');
             let that = this;
             if(file) {
                 this.$root.sendipc('update-app', {
@@ -380,6 +382,7 @@ header.header {
                     name: file.name, 
                     url: file.browser_download_url 
                 }, fn: (ev, data) => {
+                    console.dir(data);
                     if (data.state == 'data'){
                         that.progress = data.pro;
                         that.state = '下载中' + (that.progress > 0 ? `(${that.progress}%)` : '');

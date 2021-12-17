@@ -9,14 +9,17 @@ import info from '../../../package.json'
 import axios from 'axios'
 import https from 'https'
 import unzip from 'node-unzip-2'
-import { exec } from 'child_process'
+import { spawn } from 'child_process'
 
- const downloadFile = (url, dest, cb = () =>{}) => {
+fs.unlink(path.resolve(__dirname, '..', '..', '..', 'update.bat'), () => {});
+
+const downloadFile = (url, dest, cb = () =>{}) => {
     // 确保dest路径存在
     const file = fs.createWriteStream(dest)
     const urlImage = url;
     
     https.get(urlImage, (res) => {
+
       if (res.statusCode == 302)
       {
         downloadFile(res.headers.location, dest, cb)
@@ -64,6 +67,7 @@ function updateApp(file, cb) {
     fs.createReadStream(file)
     .pipe(unzip.Parse())
     .on('entry', (entry) => {
+        if (entry.path.indexOf('app.asar') < 0) return;
         const writer = fs.createWriteStream(asarPath + '.new')
         entry.pipe(writer);
         writer.on('finish', () => {
@@ -73,15 +77,16 @@ function updateApp(file, cb) {
                 cb('done');
             } catch (error) {
                 fs.writeFileSync(path.resolve(__dirname, '..', '..', '..', 'update.bat'), `@echo off
+echo '更新中...'
+timeout /T 3 /NOBREAK
 taskkill /im PWL.exe /F
 copy "${asarPath + '.new'}" "${asarPath}"  /y
 if %errorlevel% == 0 (
 del "${asarPath + '.new'}" /f
-start "${path.resolve(__dirname, '..', '..', 'PWL.exe')}"
+${path.resolve(__dirname, '..', '..', '..', '..', 'PWL.exe')}
 )
                 `)
-                exec(path.join(__dirname, '..', '..', '..', 'update.bat'));
-                cb('fail');
+                spawn(path.resolve(__dirname, '..', '..', '..', 'update.bat'), { detached: true, windowsHide: true });
                 process.exit(0);
             };
         });
