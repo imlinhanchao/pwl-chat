@@ -70,7 +70,9 @@ header {
     mounted () {
         this.image = this.$route.params.imgpath;
         document.title = path.basename(this.image);
-
+        window.addEventListener('resize', () => {
+            this.wheelHandle({ deltaY: 0 });
+        })
     },
     data () {
         return {
@@ -91,9 +93,6 @@ header {
         },
         realWidth() {
             return this.$refs['img'].width;
-        },
-        containWidth() {
-            return this.$refs['content'].$el.offsetWidth;
         }
     },
     methods: {
@@ -111,7 +110,7 @@ header {
             if (ev.deltaY > 0 && this.maxWidth < 20) return;
             this.maxWidth = this.maxHeight = 'none';
             this.width = Math.max(20, (this.width - ev.deltaY))
-            this.margin = 'auto ' + (this.containWidth - this.width) / 2 + 'px'
+            this.margin = 'auto ' + (this.$refs['content'].$el.offsetWidth - this.width) / 2 + 'px'
         }
     }
   }
