@@ -590,7 +590,7 @@
                 }
                 await this.wsSend(this.message, false);
                 this.message = '';
-                this.$refs.content.$ele.scrollTo(0, 0);
+                this.$refs.content.$el.scrollTo(0, 0);
                 this.sending = false;
                 return true;
             },

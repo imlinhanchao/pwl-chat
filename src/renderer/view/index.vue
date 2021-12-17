@@ -99,7 +99,7 @@ header.header {
     background: #131415;
     box-shadow: 1px 1px 1px #aca49a;
     border-radius: 10px;
-    height:50vh;
+    max-height:50vh;
     padding: 10px 0 0;
     display: flex;
     flex-direction: column;
@@ -125,6 +125,9 @@ header.header {
     }
     footer {
         margin: 0;
+        position: absolute;
+        width: 100%;
+        bottom: 0;
     }
 }
 </style>
