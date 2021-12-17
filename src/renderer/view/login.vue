@@ -164,7 +164,7 @@
                 });
             },
             register() {
-                window.open('https://pwl.icu/register');
+                window.open(`https://${this.$root.config.domain}/register`);
             }
         }
     }

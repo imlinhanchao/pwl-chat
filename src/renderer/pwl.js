@@ -1,4 +1,11 @@
 import crypto from 'crypto'
+import fs from 'fs';
+import path from 'path';
+
+let rootPath = process.env.NODE_ENV == 'development' ? 
+    path.resolve(__dirname, '..', '..') :
+    process.resourcesPath
+let config = JSON.parse(fs.readFileSync(path.resolve(rootPath, 'config.json')))
 
 class PWL {
     constructor(token) {
@@ -240,7 +247,7 @@ class PWL {
     
         let rsp;
         try {
-            rsp = await fetch(`https://pwl.icu/${url}`, options);
+            rsp = await fetch(`https://${config.domain}/${url}`, options);
             try{ rsp.data = await rsp.clone().json(); } catch(e) {}
             rsp.raw = await rsp.clone().text();
             return rsp;

@@ -1,5 +1,7 @@
 import ipc from './ipc'
 import PWL from './pwl'
+import fs from 'fs';
+import path from 'path';
 
 import Vue from 'vue'
 import axios from 'axios'
@@ -15,6 +17,11 @@ import './theme/index.css'
 import './theme/font-awesome.css'
 import './theme/highlight.css'
 import { ipcRenderer } from 'electron';
+
+let rootPath = process.env.NODE_ENV == 'development' ? 
+    path.resolve(__dirname, '..', '..') :
+    process.resourcesPath
+let config = JSON.parse(fs.readFileSync(path.resolve(rootPath, 'config.json')))
 
 
 Vue.use(iView)
@@ -52,6 +59,7 @@ new Vue({
     host: '',
     token: '',
     pwl: new PWL(),
+    config
   },
   methods: {
     sendipc: ipc.sendipc,

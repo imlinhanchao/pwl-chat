@@ -28,7 +28,8 @@
       "dist/electron/**/*"
     ],
     "extraResources": [
-      "audio/**/*"
+      "audio/**/*",
+      "config.json"
     ],
     "dmg": {
       "contents": [

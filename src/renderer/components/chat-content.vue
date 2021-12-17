@@ -347,7 +347,7 @@
                 <svg><use xlink:href="#redPacketIcon"></use></svg> {{item.whoGot}} 抢到了 {{item.whoGive}} 的 <a href="#" @click="openRedpacket(item)">红包</a> ({{item.got}}/{{item.count}})
             </div>
             <div class="msg-item" v-if="item.content" :class="{'msg-current': item.userName == current.userName}" @contextmenu="menuShow(item, $event)">
-                <div class="msg-avatar-box"><a target="_blank" :href="`https://pwl.icu/member/${item.userName}`"><Avatar class="msg-avatar" :src="item.userAvatarURL" /></a></div>
+                <div class="msg-avatar-box"><a target="_blank" :href="`https://${$root.config.domain}/member/${item.userName}`"><Avatar class="msg-avatar" :src="item.userAvatarURL" /></a></div>
                 <div :ref="`msg-${item.oId}`" :data-id="item.oId" class="msg-item-contain">
                     <div class="msg-user" :title="item.userNickname">{{item.userName}}</div>
                     <div class="msg-menu" :ref="`msg-menu-${item.oId}`" v-if="menu[item.oId]" :style="{ top: menu[item.oId].y + 'px', left: menu[item.oId].x + 'px' }">
@@ -579,7 +579,7 @@
             wsInit() {
                 let that = this;
                 if (this.rws != null) this.rws.close();
-                this.rws = new ReconnectingWebSocket(`wss://pwl.icu/chat-room-channel?apiKey=${this.$root.token}`);
+                this.rws = new ReconnectingWebSocket(`wss://${this.$root.config.domain}/chat-room-channel?apiKey=${this.$root.token}`);
                 this.rws.reconnectInterval = 10000
 
                 this.rws.onopen = (e) => {

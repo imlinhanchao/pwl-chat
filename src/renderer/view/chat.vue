@@ -528,7 +528,7 @@
                     return;
                 }
                 let redpacket = Object.assign({}, this.redpacket);
-                redpacket.msg = redpacket.msg || '摸鱼者，事竟成！';
+                redpacket.msg = redpacket.msg || defaultRedpackWord[redpacketType];
                 let data = { 
                     msg: redpacket.msg, money: 
                     redpacket.money, 

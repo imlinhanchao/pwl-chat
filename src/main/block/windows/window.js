@@ -2,7 +2,14 @@ import {
     BrowserWindow,
     session
 } from 'electron'
+import fs from 'fs'
+import path from 'path'
 
+let rootPath = process.env.NODE_ENV == 'development' ? 
+    path.resolve(__dirname, '..', '..', '..', '..') :
+    process.resourcesPath;
+
+let config = JSON.parse(fs.readFileSync(path.resolve(rootPath, 'config.json')))
 
 class Windows {
     constructor(app, {
@@ -12,7 +19,7 @@ class Windows {
         session.defaultSession.webRequest.onBeforeSendHeaders({
             urls: ['*.pwl.stackoverflow.wiki/*']
           }, (details, cb) => {
-            details.requestHeaders['referer'] = 'https://pwl.icu/'
+            details.requestHeaders['referer'] = `https://${config.domain}/`
             let data = { requestHeaders: details.requestHeaders }
             cb(data)
         })
@@ -42,7 +49,7 @@ class Windows {
             `file://${__dirname}/index.html#${url}`
 
         this.window.loadURL(winURL, {
-            httpReferrer:"https://pwl.icu/"
+            httpReferrer:`https://${config.domain}/`
         })
 
         if (process.argv.slice(1).filter(a => a.indexOf('--dev') >= 0).length > 0) {

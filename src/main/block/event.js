@@ -11,7 +11,11 @@ import https from 'https'
 import unzip from 'node-unzip-2'
 import { spawn } from 'child_process'
 
-fs.unlink(path.resolve(__dirname, '..', '..', '..', 'update.bat'), () => {});
+let rootPath = process.env.NODE_ENV == 'development' ? 
+    path.resolve(__dirname, '..', '..', '..') :
+    process.resourcesPath
+
+fs.unlink(path.resolve(rootPath, 'update.bat'), () => {});
 
 const downloadFile = (url, dest, cb = () =>{}) => {
     // 确保dest路径存在
@@ -63,7 +67,7 @@ const downloadFile = (url, dest, cb = () =>{}) => {
 }
   
 function updateApp(file, cb) {
-    let asarPath = path.resolve(__dirname, '..', '..', '..', 'app.asar');
+    let asarPath = path.resolve(rootPath, 'app.asar');
     fs.createReadStream(file)
     .pipe(unzip.Parse())
     .on('entry', (entry) => {
@@ -76,17 +80,17 @@ function updateApp(file, cb) {
                 fs.renameSync(asarPath + '.new', asarPath);
                 cb('done');
             } catch (error) {
-                fs.writeFileSync(path.resolve(__dirname, '..', '..', '..', 'update.bat'), `@echo off
+                fs.writeFileSync(path.resolve(rootPath, 'update.bat'), `@echo off
 echo '更新中...'
 timeout /T 3 /NOBREAK
 taskkill /im PWL.exe /F
 copy "${asarPath + '.new'}" "${asarPath}"  /y
 if %errorlevel% == 0 (
 del "${asarPath + '.new'}" /f
-${path.resolve(__dirname, '..', '..', '..', '..', 'PWL.exe')}
+${path.resolve(rootPath, '..', 'PWL.exe')}
 )
                 `)
-                spawn(path.resolve(__dirname, '..', '..', '..', 'update.bat'), { detached: true, windowsHide: true });
+                spawn(path.resolve(rootPath, 'update.bat'), { detached: true, windowsHide: true });
                 process.exit(0);
             };
         });

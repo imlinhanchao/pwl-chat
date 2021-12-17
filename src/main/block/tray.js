@@ -8,12 +8,16 @@ import path from 'path'
 import info from '../../../package.json'
 import music from 'sound-play'
 
+let rootPath = process.env.NODE_ENV == 'development' ? 
+    path.resolve(__dirname, '..', '..', '..') :
+    process.resourcesPath
+
 var tray
 let create = (app, win) => {
     // tray
     let timer = null, tick = 0, count = 0;
     let icon = path.join(__static, 'icon', 'icon.png')
-    let sound = path.join(__dirname, '..', '..', '..', 'audio', 'shake.wav')
+    let sound = path.join(rootPath, 'audio', 'shake.wav')
     tray = new Tray(icon)
     const contextMenu = Menu.buildFromTemplate([{
             label: 'Developer Tool',
