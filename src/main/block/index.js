@@ -1,3 +1,4 @@
+import path from 'path'
 import fs from 'fs'
 import windows from './windows'
 import tray from './tray'

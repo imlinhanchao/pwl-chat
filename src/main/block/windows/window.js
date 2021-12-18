@@ -9,7 +9,7 @@ let rootPath = process.env.NODE_ENV == 'development' ?
     path.resolve(__dirname, '..', '..', '..', '..') :
     process.resourcesPath;
 
-let config = JSON.parse(fs.readFileSync(path.resolve(rootPath, 'config.json')))
+let config;
 
 class Windows {
     constructor(app, {
@@ -23,6 +23,8 @@ class Windows {
             let data = { requestHeaders: details.requestHeaders }
             cb(data)
         })
+
+        config = JSON.parse(fs.readFileSync(path.resolve(rootPath, 'config.json')))
         
         this.window = new BrowserWindow({
             parent: parent,
