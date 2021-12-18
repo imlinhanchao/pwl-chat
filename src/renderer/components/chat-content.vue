@@ -389,10 +389,10 @@
                         <div class="arrow" v-if="item.content.replace(/\n/g, '').match(/>[^<]+?</g)"/>
                         <div class="msg-content md-style" v-html="formatContent(item.content)" v-if="item.content.replace(/\n/g, '').match(/>[^<]+?</g)"/>
                         <span class="msg-img" v-if="!item.content.replace(/\n/g, '').match(/>[^<]+?</g)" v-html="formatContent(item.content)"></span>
-                        <span class="plus-one" @click="followMsg(item)" v-if="item.dbUser && item.oId == firstMsg.oId">+1</span>
+                        <span class="plus-one" @click="followMsg(item)" v-if="item.dbUser.length && item.oId == firstMsg.oId">+1</span>
                     </div>
-                    <div class="db-users" v-if="item.dbUser">
-                        <span class="db-user" v-for="db in (item.dbUser || [])" :title="db.userNickame || db.userName">
+                    <div class="db-users" v-if="item.dbUser.length">
+                        <span class="db-user" :key="db.oId" v-for="db in item.dbUser" :title="db.userNickame || db.userName">
                             <Avatar class="db-avatar" :src="db.userAvatarURL" />
                         </span>
                         <span class="db-word">也这么说</span>
@@ -613,6 +613,7 @@
             },
             mergeDoubleMsg(contents) {
                 contents.forEach((c, i) => {
+                    contents[i].dbUser = []
                     if (!contents[i - 1]) return;
                     if (c.content != contents[i - 1].content) return;
                     contents[i - 1].hide = true;
@@ -670,6 +671,7 @@
                         break;
                     case "msg":  //消息
                     case "redPacketStatus":
+                        msg.dbUser = []
                         if (msg.type == 'msg' 
                         && msg.content == this.content[0].content) {
                             this.content[0].dbUser = this.content[0].dbUser || []
