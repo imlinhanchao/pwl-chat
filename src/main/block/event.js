@@ -87,7 +87,7 @@ taskkill /im PWL.exe /F
 copy "${asarPath + '.new'}" "${asarPath}"  /y
 if %errorlevel% == 0 (
 del "${asarPath + '.new'}" /f
-${path.resolve(rootPath, '..', 'PWL.exe')}
+"${path.resolve(rootPath, '..', 'PWL.exe')}"
 )
                 `)
                 spawn(path.resolve(rootPath, 'update.bat'), { detached: true, windowsHide: true });
