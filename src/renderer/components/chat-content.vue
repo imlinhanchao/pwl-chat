@@ -30,8 +30,9 @@
     position: relative;
     width: 80vw;
     .msg-img {
-        padding: 10px;
+        padding: 5px 10px;
         display: inline-block;
+        font-size: 0;
     }
     .plus-one {
         font-size: .8em;
@@ -296,8 +297,8 @@
         padding: 2px;
     }
     .db-avatar {
-        width: 30px;
-        height: 30px;
+        width: 25px;
+        height: 25px;
     }
     .db-word {
         display: inline-block;
