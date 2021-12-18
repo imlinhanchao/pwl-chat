@@ -29,6 +29,11 @@ export default new Router({
             component: require('@/view/img').default,
         },
         {
+            path: '/setting',
+            name: 'setting',
+            component: require('@/view/setting').default,
+        },
+        {
             path: '*',
             redirect: '/'
         }
