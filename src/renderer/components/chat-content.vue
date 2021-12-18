@@ -217,7 +217,7 @@
     }
     .redpacket-content {
         position: relative;
-        padding-top: 10px;
+        padding-top: 0;
         z-index: 2;
         color: #000;
         ul {
@@ -242,7 +242,7 @@
         }
     }
     .redpacket-list {
-        height: 200px;
+        height: 190px;
         overflow: auto;
         padding: 5px;
     }

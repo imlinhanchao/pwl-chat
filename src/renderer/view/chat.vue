@@ -459,6 +459,9 @@
                     specify: '试试看，这是给你的红包吗？',
                     heartbeat: '玩的就是心跳！'
                 }
+            },
+            innerWidth() {
+                return window.innerWidth
             }
         },
         methods: {
