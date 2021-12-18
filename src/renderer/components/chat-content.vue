@@ -281,6 +281,29 @@
         border-bottom: 1px dashed #d23f31;
     }
 }
+.msg-current {
+    .db-users {
+        justify-content: flex-end;
+    }
+}
+.db-users {
+    padding: 5px 0 5px 10px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-wrap: wrap;
+    .db-user {
+        padding: 2px;
+    }
+    .db-avatar {
+        width: 30px;
+        height: 30px;
+    }
+    .db-word {
+        display: inline-block;
+        padding-left: 5px;
+    }
+}
 </style>
 <style lang="less">
 .ivu-tabs.ivu-tabs-card>.ivu-tabs-bar .ivu-tabs-tab {
@@ -311,14 +334,6 @@
         a {
             border-bottom: 1px dashed #F6F8FA;
         }
-    }
-}
-.msg-img {
-    img {
-        max-width: 80vw;
-    }
-    [alt="图片表情"] {
-        max-width: 100px;
     }
 }
 .ivu-tooltip-popper {
@@ -373,7 +388,13 @@
                         <div class="arrow" v-if="item.content.replace(/\n/g, '').match(/>[^<]+?</g)"/>
                         <div class="msg-content md-style" v-html="formatContent(item.content)" v-if="item.content.replace(/\n/g, '').match(/>[^<]+?</g)"/>
                         <span class="msg-img" v-if="!item.content.replace(/\n/g, '').match(/>[^<]+?</g)" v-html="formatContent(item.content)"></span>
-                        <span class="plus-one" @click="followMsg(item)" v-if="firstMsg && secondMsg && firstMsg.content == secondMsg.content && item.oId == firstMsg.oId">+1</span>
+                        <span class="plus-one" @click="followMsg(item)" v-if="item.dbUser && item.oId == firstMsg.oId">+1</span>
+                    </div>
+                    <div class="db-users" v-if="item.dbUser">
+                        <span class="db-user" v-for="db in (item.dbUser || [])" :title="db.userNickame || db.userName">
+                            <Avatar class="db-avatar" :src="db.userAvatarURL" />
+                        </span>
+                        <span class="db-word">也这么说</span>
                     </div>
                 </div>
             </div>
@@ -572,9 +593,38 @@
                 }
                 let oIds = this.content.map(c => c.oId);
                 let data = rsp.data.filter(d => oIds.indexOf(d.oId) < 0)
-                if(page > 1) this.content = this.content.concat(data);
-                else this.content = rsp.data;
+                data = this.mergeDoubleMsg(data);
+                if(page > 1) {
+                    if (this.content[0].dbUser 
+                    && data[data.length - 1].content == this.content[0].content) {
+                        let last = data.pop();
+                        last.dbUser = last.dbUser || []
+                        last.dbUser.splice(0, 0, {
+                            userName: last.userName,
+                            userAvatarURL: last.userAvatarURL
+                        })
+                        this.content[0].dbUser.splice(0, 0, ...last.dbUser)
+                    }
+                    this.content = this.content.concat(data);
+                }
+                else this.content = data;
                 this.page = page;
+            },
+            mergeDoubleMsg(contents) {
+                contents.forEach((c, i) => {
+                    if (!contents[i - 1]) return;
+                    if (c.content != contents[i - 1].content) return;
+                    contents[i - 1].hide = true;
+                    contents[i].dbUser = contents[i - 1].dbUser || [];
+                    contents[i].dbUser.splice(0, 0, {
+                        userName: contents[i - 1].userName,
+                        userNickame: contents[i - 1].userNickame,
+                        userAvatarURL: contents[i - 1].userAvatarURL,
+                        oId: contents[i - 1].oId
+                    })
+                    contents[i - 1].dbUser = undefined;
+                });
+                return contents.filter(c => !c.hide);
             },
             wsInit() {
                 let that = this;
@@ -610,7 +660,8 @@
                         break;
                     case "revoke":  //撤回
                         for (let i = 0; i < this.content.length; i++) {
-                            let c= this.content[i];
+                            let c = this.content[i];
+                            if (this.content[i].dbUser) this.content[i].dbUser = this.content[i].dbUser.filter(d => d.oId != msg.oId)
                             if (c.oId != msg.oId) continue;
                             this.content.splice(i, 1);
                             break;
@@ -618,7 +669,17 @@
                         break;
                     case "msg":  //消息
                     case "redPacketStatus":
-                        this.content.splice(0, 0, msg)
+                        if (msg.type == 'msg' 
+                        && msg.content == this.content[0].content) {
+                            this.content[0].dbUser = this.content[0].dbUser || []
+                            this.content[0].dbUser.push({
+                                userName: msg.userName,
+                                userNickname: msg.userNickame,
+                                userAvatarURL: msg.userAvatarURL,
+                                oId: msg.oId
+                            })
+                        }
+                        else this.content.splice(0, 0, msg)
                         if (this.content.length > 2000) this.load(1);
                         if(msg.type == 'msg') ipcRenderer.send('sys-msg', msg);
                         else if (msg.count == msg.got) {

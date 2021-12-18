@@ -227,6 +227,15 @@ header.header {
         box-shadow: inset 0 -1px 0 #d1d5da
     }
 }
+
+.msg-img {
+    img {
+        max-width: 80vw;
+    }
+    [alt="图片表情"] {
+        max-width: 100px;
+    }
+}
 </style>
 
 <template>
