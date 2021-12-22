@@ -531,10 +531,10 @@
                     return;
                 }
                 let redpacket = Object.assign({}, this.redpacket);
-                redpacket.msg = redpacket.msg || defaultRedpackWord[redpacketType];
+                redpacket.msg = redpacket.msg || this.defaultRedpackWord[redpacket.type];
                 let data = { 
-                    msg: redpacket.msg, money: 
-                    redpacket.money, 
+                    msg: redpacket.msg, 
+                    money: redpacket.money, 
                     count: redpacket.count,
                     recivers: redpacket.recivers,
                     type: redpacket.type
