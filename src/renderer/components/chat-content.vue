@@ -207,6 +207,7 @@
     .redpacket-msg {
         color: #24292e;
         font-size: .8em;
+        min-height: 2em;
     }
     .redpacket-user {
         width: calc(100% - 70px);
