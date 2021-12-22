@@ -616,6 +616,7 @@
                 contents.forEach((c, i) => {
                     contents[i].dbUser = []
                     if (!contents[i - 1]) return;
+                    if (this.getRedPacket(contents[i])) return;
                     if (c.content != contents[i - 1].content) return;
                     contents[i - 1].hide = true;
                     contents[i].dbUser = contents[i - 1].dbUser || [];
