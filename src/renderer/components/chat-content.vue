@@ -33,6 +33,7 @@
         padding: 5px 10px;
         display: inline-block;
         font-size: 0;
+        max-width: 70vw;
     }
     .plus-one {
         font-size: .8em;
@@ -672,7 +673,7 @@
                     case "msg":  //消息
                     case "redPacketStatus":
                         msg.dbUser = []
-                        if (msg.type == 'msg' 
+                        if (msg.type == 'msg' && !this.getRedPacket(msg)
                         && msg.content == this.content[0].content) {
                             this.content[0].dbUser = this.content[0].dbUser || []
                             this.content[0].dbUser.push({
