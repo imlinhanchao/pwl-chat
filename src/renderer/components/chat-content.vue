@@ -319,7 +319,7 @@
     right: -14px;
     transform: scaleX(-1);
     top: 20px;
-    z-index: 100;
+    z-index: 9;
 }
 .msg-current {
     .christmas {
