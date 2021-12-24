@@ -230,7 +230,7 @@ header.header {
 
 .msg-img {
     img {
-        max-width: 80vw;
+        max-width: 100%;
     }
     [alt="图片表情"] {
         max-width: 100px;
