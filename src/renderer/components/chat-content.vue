@@ -1,4 +1,13 @@
 <style lang="less" scoped>
+.msg-new {
+    position: absolute;
+    right: 20px;
+    background: #d23f31;
+    padding: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 200;
+}
 .msg-item{
     display: flex;
     flex-direction: row;
@@ -380,7 +389,11 @@
 </style>
 
 <template>
-    <section class="chat-content" ref="chat-content">
+    <section class="chat-content" ref="chat-content" @scroll="scrollChat">
+        <div v-if="hasNewMsg" class="msg-new" 
+            @click="$refs['chat-content'].scrollTo(0, 0)">
+            <i class="fa fa-angle-double-up"></i> 新消息
+        </div>
         <div v-for="(item, i) in content" v-bind:key="(item.type || 'msg') + '_' + item.oId + (item.whoGot || '')" :data-key="(item.type || 'msg') + '_' + item.oId + (item.whoGot || '')">
             <div class="redpacket-status" v-if="item.type == 'redPacketStatus'">
                 <svg><use xlink:href="#redPacketIcon"></use></svg> {{item.whoGot}} 抢到了 {{item.whoGive}} 的 <a href="#" @click="openRedpacket(item)">红包</a> ({{item.got}}/{{item.count}})
@@ -478,6 +491,7 @@
         },
         mounted () {
             this.init();
+            
         },
         data () {
             return {
@@ -488,7 +502,8 @@
                 faceMenu: {},
                 loading: false,
                 menuTarget: null,
-                redpacketData: null
+                redpacketData: null,
+                hasNewMsg: false
             }
         },
         watch: {
@@ -534,6 +549,9 @@
             clear (ev) {
                 this.menu = {};
                 this.redpacketData = null;
+            },
+            scrollChat() {
+                if (this.$refs['chat-content'].scrollTop == 0) this.hasNewMsg = false;
             },
             async openRedpacket(item) {
                 let rsp = await this.$root.pwl.openRedpacket(item.oId);
@@ -712,7 +730,11 @@
                         }
                         else this.content.splice(0, 0, msg)
                         if (this.content.length > 2000) this.load(1);
-                        if(msg.type == 'msg') ipcRenderer.send('sys-msg', msg);
+                        if(msg.type == 'msg') {
+                            ipcRenderer.send('sys-msg', msg);
+                            this.hasNewMsg = this.$refs['chat-content'].scrollTop > 60
+                                
+                        }
                         else if (msg.count == msg.got) {
                             for (let i = 0; i < this.content.length; i++) {
                                 let c= this.content[i];
