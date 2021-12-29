@@ -297,7 +297,7 @@ header.header {
         this.timer = setInterval(async () => {
             this.liveness = await this.$root.pwl.liveness();
             if (this.liveness.code == 401) this.$root.relogin();
-        }, 30000)
+        }, 60000)
         this.check_update();
         setInterval(async () => {
             this.check_update();
