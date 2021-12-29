@@ -393,7 +393,8 @@
                 <div :ref="`msg-${item.oId}`" :data-id="item.oId" class="msg-item-contain">
                     <div class="msg-user" :title="item.userNickname">{{item.userName}}</div>
                     <div class="msg-menu" :ref="`msg-menu-${item.oId}`" v-if="menu[item.oId]" :style="{ top: menu[item.oId].y + 'px', left: menu[item.oId].x + 'px' }">
-                        <div class="msg-menu-item" v-if="item.userName == current.userName" @click="revokeMsg(item.oId)">撤回</div>
+                        <div class="msg-menu-item" v-if="item.userName == current.userName || ['纪律委员', 'OP'].indexOf(current.userRole) >= 0" @click="revokeMsg(item.oId)">撤回</div>
+                        <div class="msg-menu-item" v-if="item.dbUser && item.dbUser.length && ['纪律委员', 'OP'].indexOf(current.userRole) >= 0" @click="revokeAllMsg(item)">撤回复读</div>
                         <div class="msg-menu-item" v-if="item.userName != current.userName" @click="atMsg(item)">@{{item.userName}}</div>
                         <div class="msg-menu-item" v-if="hasFace(item.content)" @click="addFace">添加到表情包</div>
                         <div class="msg-menu-item" v-if="!getRedPacket(item)" @click="followMsg(item)">复读一下</div>
@@ -591,6 +592,11 @@
                 this.menu = { [item.oId]: pos };
                 this.msgCursor();
             },
+            async revokeAllMsg(item) {
+                if (!confirm('是否确定批量撤回所有复读消息？')) return;
+                item.dbUser.forEach(i => this.revokeMsg(i.oId));
+                this.revokeMsg(item.oId);
+            },
             async revokeMsg(id) {
                 let rsp = await this.$root.pwl.revoke(id);
                 if (!rsp) return;
@@ -645,13 +651,8 @@
                     if (c.content != contents[i - 1].content) return;
                     contents[i - 1].hide = true;
                     contents[i].dbUser = contents[i - 1].dbUser || [];
-                    contents[i].dbUser.splice(0, 0, {
-                        userName: contents[i - 1].userName,
-                        userNickame: contents[i - 1].userNickame,
-                        userAvatarURL: contents[i - 1].userAvatarURL,
-                        oId: contents[i - 1].oId
-                    })
                     contents[i - 1].dbUser = undefined;
+                    contents[i].dbUser.splice(0, 0, contents[i - 1])
                 });
                 return contents.filter(c => !c.hide);
             },
@@ -692,7 +693,12 @@
                             let c = this.content[i];
                             if (this.content[i].dbUser) this.content[i].dbUser = this.content[i].dbUser.filter(d => d.oId != msg.oId)
                             if (c.oId != msg.oId) continue;
-                            this.content.splice(i, 1);
+                            if (this.content[i].dbUser && this.content[i].dbUser.length) {
+                                let nextUser = this.content[i].dbUser.shift();
+                                if(this.content[i].dbUser.length) nextUser.dbUser = this.content[i].dbUser;
+                                this.content[i] = nextUser;
+                            }
+                            else this.content.splice(i, 1);
                             break;
                         }
                         break;
@@ -702,12 +708,7 @@
                         if (msg.type == 'msg' && !this.getRedPacket(msg)
                         && msg.content == this.content[0].content) {
                             this.content[0].dbUser = this.content[0].dbUser || []
-                            this.content[0].dbUser.push({
-                                userName: msg.userName,
-                                userNickname: msg.userNickame,
-                                userAvatarURL: msg.userAvatarURL,
-                                oId: msg.oId
-                            })
+                            this.content[0].dbUser.push(msg)
                         }
                         else this.content.splice(0, 0, msg)
                         if (this.content.length > 2000) this.load(1);
