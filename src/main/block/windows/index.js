@@ -16,7 +16,6 @@ let create = (app) => {
     })
 
     _app = app
-    //windows.main.window.maximize()
     return windows.main.windows;
 }
 

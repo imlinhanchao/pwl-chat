@@ -1,5 +1,6 @@
 <style lang="less" scoped>
 .layout {
+    background: #232425;
     padding: 5px;
     display: flex;
     flex-direction: column;

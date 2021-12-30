@@ -5,8 +5,10 @@
  *  environment.
  */
  import {
-  BrowserWindow
+  session
 } from 'electron'
+
+import path from 'path';
 
 /* eslint-disable */
 
@@ -18,13 +20,9 @@ require('electron-debug')({ showDevTools: true })
 
 // Install `vue-devtools`
 require('electron').app.on('ready', () => {
-  // let installExtension = require('electron-devtools-installer')
-  // installExtension.default(installExtension.VUEJS_DEVTOOLS)
-  //   .then(() => {})
-  //   .catch(err => {
-  //     console.log('Unable to install `vue-devtools`: \n', err)
-  //   })
-  BrowserWindow.addDevToolsExtension('node_modules/vue-devtools/vender')
+    session.defaultSession.loadExtension(
+      path.resolve(__dirname, '..', '..', 'node_modules/vue-devtools/vender'), 
+      { allowFileAccess: true })
 })
 
 // Require `main` process to boot app

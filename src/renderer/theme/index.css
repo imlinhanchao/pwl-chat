@@ -3,7 +3,7 @@ html {
 }
 
 body {
-    background: #232425;
+    background: transparent;
     color: #cecac3;
     font: 1em/1.8 PingFang SC, Lantinghei SC, Segoe UI, Microsoft Yahei,Roboto, Helvetica Neue,Helvetica,Arial,sans-serif;
     -webkit-app-region: drag;

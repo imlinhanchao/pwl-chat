@@ -14,10 +14,11 @@ let config;
 class Windows {
     constructor(app, {
         parent=null, frame=true, resizable=true, transparent=false,
-        size={}, skipbar=false, url='', quitEvent, show=false
+        size={}, skipbar=false, url='', quitEvent, show=false,
+        transparent=true
     }) {
         session.defaultSession.webRequest.onBeforeSendHeaders({
-            urls: ['*.pwl.stackoverflow.wiki/*']
+            urls: ['https://*.pwl.stackoverflow.wiki/*']
           }, (details, cb) => {
             details.requestHeaders['referer'] = `https://${config.domain}/`
             let data = { requestHeaders: details.requestHeaders }
@@ -38,7 +39,8 @@ class Windows {
             skipTaskbar: skipbar,
             webPreferences: {
                 nodeIntegration: true,
-                webSecurity: false
+                webSecurity: false,
+                contextIsolation: false,
             },
         })
 
