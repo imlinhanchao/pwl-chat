@@ -384,14 +384,10 @@ header.header {
         startUpdate() {
             if (this.updating) return;
             this.updating = true;
-            let file = this.update.assets.find(f => f.name == 'update-file.zip');
             let that = this;
-            if(file) {
-                this.$root.sendipc('update-app', {
-                    argv: { 
-                    name: file.name, 
-                    url: file.browser_download_url 
-                }, fn: (ev, data) => {
+            this.$root.sendipc('update-app', {
+                argv: this.update, 
+                fn: (ev, data) => {
                     console.dir(data);
                     if (data.state == 'data'){
                         that.progress = data.pro;
@@ -403,9 +399,12 @@ header.header {
                     else if(data.state == 'done') {
                         that.state = '更新完成，请重启生效'
                     }
-                }});
-            }
-            else window.open(`https://gitee.com/imlinhanchao/pwl-chat/releases/${this.update.tag_name}`)
+                    else if (data.state == 'fail') {
+                        that.state = '自动更新失效，请手动下载'
+                        window.open(`https://gitee.com/imlinhanchao/pwl-chat/releases/${this.update.tag_name}`)
+                    }
+                }
+            });
         }
     }
   }
