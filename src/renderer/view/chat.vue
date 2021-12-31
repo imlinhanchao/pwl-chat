@@ -660,7 +660,7 @@
                     let raw = await this.$root.pwl.raw(this.quote.oId);
                     raw = raw.split('\n').map(r => `>${r}`).join('\n').trim();
                     let at = this.quote.userName != this.current.userName ? `@${this.quote.userName} ` : ''
-                    this.message = `${at}回复：\n\n${raw}\n\n${this.message}`;
+                    this.message = `回复${at}：\n\n${raw}\n\n${this.message}`;
                     this.quote = null;
                 }
                 await this.wsSend(this.message, false);

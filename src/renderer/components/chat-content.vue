@@ -523,7 +523,7 @@
                     (w) => w.userName == this.current.userName
                 );
                 this.redpacketData.recivers = this.redpacketData.recivers || [];
-                this.redpacketData.recivers = this.redpacketData.recivers.filter(r => r);
+                this.redpacketData.recivers = this.redpacketData.recivers.filter(r => r && typeof(r) == 'string');
                 let specify = (this.redpacketData.recivers.length && this.redpacketData.recivers.indexOf(this.current.userName) >= 0)
                 let msg;
                 if (this.redpacketData.recivers.length && !specify) {
