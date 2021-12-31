@@ -412,7 +412,7 @@
                         <div class="msg-menu-item" v-if="hasFace(item.content)" @click="addFace">添加到表情包</div>
                         <div class="msg-menu-item" v-if="!getRedPacket(item)" @click="followMsg(item)">复读一下</div>
                         <div class="msg-menu-item" v-if="isEmoji()" title="消息中插入该表情" @click="appendMsg(null, emojiCode(item.content))">{{emojiCode(item.content)}}</div>
-                        <div class="msg-menu-item" v-if="!getRedPacket(item)" @click="quoteMsg(item)">引用</div>
+                        <div class="msg-menu-item" v-if="!getRedPacket(item)" @click="quoteMsg(item)">回复</div>
                     </div>
                     <div class="redpacket-item" :title="getRedPacket(item).empty ? '红包已领完' : getRedPacket(item).readed ? '红包已领取' : ''"
                     :class="{'redpacket-empty': getRedPacket(item).empty || getRedPacket(item).readed}" 
@@ -523,6 +523,7 @@
                     (w) => w.userName == this.current.userName
                 );
                 this.redpacketData.recivers = this.redpacketData.recivers || [];
+                this.redpacketData.recivers = this.redpacketData.recivers.filter(r => r);
                 let specify = (this.redpacketData.recivers.length && this.redpacketData.recivers.indexOf(this.current.userName) >= 0)
                 let msg;
                 if (this.redpacketData.recivers.length && !specify) {

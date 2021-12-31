@@ -314,7 +314,7 @@
             </Modal>
             </Poptip>
             <Tooltip placement="bottom-start" v-if="quote" :max-width="innerWidth * .8">
-                <Tag closable @on-close="quote=null" color="success" v-if="quote">引用：@{{quote.userName}}</Tag>
+                <Tag closable @on-close="quote=null" color="success" v-if="quote">回复：@{{quote.userName}}</Tag>
                 <div slot="content">
                     <div class="msg-quote-tip md-style" v-html="quote.content"></div>
                 </div>
@@ -660,7 +660,7 @@
                     let raw = await this.$root.pwl.raw(this.quote.oId);
                     raw = raw.split('\n').map(r => `>${r}`).join('\n').trim();
                     let at = this.quote.userName != this.current.userName ? `@${this.quote.userName} ` : ''
-                    this.message = `${at}引用：\n\n${raw}\n\n${this.message}`;
+                    this.message = `${at}回复：\n\n${raw}\n\n${this.message}`;
                     this.quote = null;
                 }
                 await this.wsSend(this.message, false);

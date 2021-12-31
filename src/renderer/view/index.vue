@@ -2,6 +2,7 @@
 .layout {
     background: #232425;
     padding: 5px;
+    height: 100vh;
 }
 header.header {
     display: flex;
@@ -55,6 +56,7 @@ header.header {
 }
 .content, footer {
     -webkit-app-region: no-drag;
+    background: #232425;
 }
 .liveness {
     background: #57a3f3;

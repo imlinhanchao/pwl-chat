@@ -1,16 +1,11 @@
 <style lang="less" scoped>
 .layout {
+    background: #232425;
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: 0 auto;
-    height: 400px;
+    height: calc(100vh - 40px);
     margin: auto;
-    top: 0;
-    bottom: 0;
-    position: absolute;
-    left: 0;
-    right: 0;
 }
 .layout-form {
     padding: 0 .5em;

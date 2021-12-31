@@ -13,7 +13,7 @@ let config;
 
 class Windows {
     constructor(app, {
-        parent=null, frame=true, resizable=true, transparent=false,
+        parent=null, frame=true, resizable=true,
         size={}, skipbar=false, url='', quitEvent, show=false,
         transparent=true
     }) {
