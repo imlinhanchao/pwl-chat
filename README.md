@@ -1,12 +1,12 @@
 <p align="center">
-  <a href="https://pwl.icu">
+  <a href="https://fishpi.cn">
     <img width="200" src="./build/icons/256x256.png">
   </a>
 </p>
 
 <h1 align="center">摸鱼派聊天室</h1>
 
-基于摸鱼打工人社区——[摸鱼派](https://pwl.icu)开放 API 开发而成，可以在里面愉快的吹水摸鱼。
+基于摸鱼打工人社区——[摸鱼派](https://fishpi.cn)开放 API 开发而成，可以在里面愉快的吹水摸鱼。
 
 ## ✨ 功能
 
