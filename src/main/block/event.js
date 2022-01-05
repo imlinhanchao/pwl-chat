@@ -4,7 +4,6 @@ import {
 import windows from './windows'
 import fs from 'fs'
 import path from 'path'
-import os from 'os'
 import info from '../../../package.json'
 import Update from './update'
 

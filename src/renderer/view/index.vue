@@ -183,7 +183,7 @@ header.header {
     }
     
     iframe {
-        border: 1px solid #d1d5da;
+        border: 0;
         width: 100%;
     }
     
@@ -285,6 +285,11 @@ header.header {
     component: {
     },
     mounted () {
+        this.check_update();
+        setInterval(async () => {
+            this.check_update();
+        }, 36000000)
+
         window.onresize = () => {
             return (() => {
                 this.screen = {
@@ -301,10 +306,6 @@ header.header {
             this.liveness = await this.$root.pwl.liveness();
             if (this.liveness.code == 401) this.$root.relogin();
         }, 60000)
-        this.check_update();
-        setInterval(async () => {
-            this.check_update();
-        }, 36000000)
     },
     data () {
         return {
@@ -374,7 +375,9 @@ header.header {
         },
 
         async check_update() {
+            console.log('check update')
             let rsp = await this.$root.sendipcSync('win-update');
+            console.log(rsp)
             if (!rsp) return;
             this.update = rsp.data;
         },

@@ -1,10 +1,16 @@
+import path from 'path'
+import os from 'os'
+import fs from 'fs'
 import https from 'https'
 import AdmZip from 'adm-zip'
 import { spawn } from 'child_process'
 import axios from 'axios'
 import { rootPath } from 'electron-root-path';
 
+let CopyPath = '';
+
 const downloadFile = (url, dest, cb = () =>{}) => {
+    return cb('finish', url)
     // 确保dest路径存在
     const file = fs.createWriteStream(dest)
     const urlImage = url;
@@ -54,21 +60,29 @@ const downloadFile = (url, dest, cb = () =>{}) => {
 }
   
 async function checkUpdate() {
-    let rsp = await axios.get('https://gitee.com/api/v5/repos/imlinhanchao/pwl-chat/releases/latest');
-    return rsp.data;
+    try {
+        let rsp = await axios.get('https://gitee.com/api/v5/repos/imlinhanchao/pwl-chat/releases/latest');
+        return rsp.data;            
+    } catch (error) {
+        console.error(error)
+    }
 }
 
-function updateApp(file, cb) {
+function updateApp(file, cb) {  
     try {
         let unzip = new AdmZip(file);
-        let unzipPath = path.resolve(os.tmpdir(), path.basename(file).replace(/\.zip$/, ''));
+        let unzipPath = os.tmpdir();
+        let folder = path.basename(file).replace(/\.zip$/, '');
         unzip.extractAllTo(unzipPath, true);
+        unzipPath = path.resolve(unzipPath, folder);
         cb('done');
         let isWin32 = process.platform == 'win32'
+        let execute = isWin32 ? 'cmd' : 'bash'
+        let argv = isWin32 ? [ '/k' ] : [];
         let updateShell = path.resolve(os.tmpdir(), `pwl-update.${isWin32 ? 'bat' : 'sh'}`);
         let sleep = isWin32 ? 'timeout /T 3 /NOBREAK' : 'sleep 3s';
         let kill = isWin32 ? 'taskkill /im PWL.exe /F' : '';
-        let copy = isWin32 ? `xcopy "${unzipPath}" "${rootPath}" /s /e /y` : `mv "${unzipPath}/*" "${rootPath}" -f`
+        let copy = isWin32 ? `xcopy "${unzipPath}" "${rootPath}" /s /e /y` : `cp -r "${unzipPath}/" "${path.join(rootPath, CopyPath)}"`
         let lanuch = isWin32 ? `"${path.resolve(rootPath, 'PWL.exe')}"` : `open ${rootPath}`;
         fs.writeFileSync(updateShell, `${isWin32 ? '@echo off' : ''}
 echo '更新中...'
@@ -77,8 +91,8 @@ ${kill}
 ${copy}
 ${lanuch}
         `)
-    
-        spawn(updateShell, { detached: true, windowsHide: true });
+        argv.push(updateShell);
+        spawn(execute, argv, { detached: true, windowsHide: true });
         process.exit(0);
     } catch (error) {
         console.error(error);
@@ -104,13 +118,15 @@ function updateEvent(event, argv) {
     {
         let data = getDownload(argv.data);
         let savePath = path.resolve(os.tmpdir(), data.name);
-        downloadFile(data.url, savePath, (state, pro, currPro, total) => {
+        downloadFile(data.browser_download_url, savePath, (state, pro, currPro, total) => {
             if (state == 'data') {
-                if(argv.callback) event.sender.send('update-app-callback-' + argv.callback, { state, pro, currPro, total })
+                if (argv.callback) event.sender.send('update-app-callback-' + argv.callback, { state, pro, currPro, total })
             }
             else if(state == 'finish') {
-                if(argv.callback) event.sender.send('update-app-callback-' + argv.callback, { state })
-                Update.updateApp(savePath, (state) => {
+                if (argv.callback) event.sender.send('update-app-callback-' + argv.callback, { state })
+                if (data.name == 'update-file.zip' && process.platform == 'darwin')
+                    CopyPath = 'Contents';
+                updateApp(savePath, (state) => {
                     event.sender.send('update-app-callback-' + argv.callback, { state })
                 });
             }

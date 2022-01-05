@@ -175,10 +175,12 @@
     }
 }
 .msg-redpacket {
-    padding: 8px;
+    padding: 0 8px;
     svg {
         width: 25px;
         height: 25px;
+        display: inline;
+        vertical-align: middle;
     }
 }
 </style>
