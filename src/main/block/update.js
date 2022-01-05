@@ -10,7 +10,6 @@ import { rootPath } from 'electron-root-path';
 let CopyPath = '';
 
 const downloadFile = (url, dest, cb = () =>{}) => {
-    return cb('finish', url)
     // 确保dest路径存在
     const file = fs.createWriteStream(dest)
     const urlImage = url;

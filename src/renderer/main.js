@@ -22,7 +22,7 @@ let rootPath = process.env.NODE_ENV == 'development' ?
     path.resolve(__dirname, '..', '..') :
     process.resourcesPath
 let config = JSON.parse(fs.readFileSync(path.resolve(rootPath, 'config.json')))
-
+config.domain = 'fishpi.cn'
 
 Vue.use(iView)
 Vue.use(VueWorker)

@@ -11,7 +11,7 @@ let rootPath = process.env.NODE_ENV == 'development' ?
 let create = (app) => {
     if (!fs.existsSync(path.resolve(rootPath, 'config.json'))) {
         fs.writeFileSync(path.resolve(rootPath, 'config.json'), `{
-    "domain": "pwl.icu"
+    "domain": "fishpi.cn"
 }`)
     }
     let win = windows.create(app)

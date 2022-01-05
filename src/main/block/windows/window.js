@@ -26,6 +26,7 @@ class Windows {
         })
 
         config = JSON.parse(fs.readFileSync(path.resolve(rootPath, 'config.json')))
+        config.domain = 'fishpi.cn'
         
         this.window = new BrowserWindow({
             parent: parent,
