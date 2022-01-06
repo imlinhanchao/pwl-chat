@@ -406,13 +406,13 @@
                 <div :ref="`msg-${item.oId}`" :data-id="item.oId" class="msg-item-contain">
                     <div class="msg-user" :title="item.userNickname">{{item.userName}}</div>
                     <div class="msg-menu" :ref="`msg-menu-${item.oId}`" v-if="menu[item.oId]" :style="{ top: menu[item.oId].y + 'px', left: menu[item.oId].x + 'px' }">
-                        <div class="msg-menu-item" v-if="item.userName == current.userName || ['纪律委员', 'OP'].indexOf(current.userRole) >= 0" @click="revokeMsg(item.oId)">撤回</div>
-                        <div class="msg-menu-item" v-if="item.dbUser && item.dbUser.length && ['纪律委员', 'OP'].indexOf(current.userRole) >= 0" @click="revokeAllMsg(item)">撤回复读</div>
                         <div class="msg-menu-item" v-if="item.userName != current.userName" @click="atMsg(item)">@{{item.userName}}</div>
                         <div class="msg-menu-item" v-if="hasFace(item.content)" @click="addFace">添加到表情包</div>
+                        <div class="msg-menu-item" v-if="!getRedPacket(item)" @click="quoteMsg(item)">回复</div>
                         <div class="msg-menu-item" v-if="!getRedPacket(item)" @click="followMsg(item)">复读一下</div>
                         <div class="msg-menu-item" v-if="isEmoji()" title="消息中插入该表情" @click="appendMsg(null, emojiCode(item.content))">{{emojiCode(item.content)}}</div>
-                        <div class="msg-menu-item" v-if="!getRedPacket(item)" @click="quoteMsg(item)">回复</div>
+                        <div class="msg-menu-item" v-if="item.dbUser && item.dbUser.length && ['纪律委员', 'OP', '管理员'].indexOf(current.userRole) >= 0" @click="revokeAllMsg(item)">撤回复读</div>
+                        <div class="msg-menu-item" v-if="item.userName == current.userName || ['纪律委员', 'OP', '管理员'].indexOf(current.userRole) >= 0" @click="revokeMsg(item.oId)">撤回</div>
                     </div>
                     <div class="redpacket-item" :title="getRedPacket(item).empty ? '红包已领完' : getRedPacket(item).readed ? '红包已领取' : ''"
                     :class="{'redpacket-empty': getRedPacket(item).empty || getRedPacket(item).readed}" 
