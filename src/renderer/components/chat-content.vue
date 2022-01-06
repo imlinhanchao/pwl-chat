@@ -684,7 +684,7 @@
                 this.rws.onopen = (e) => {
                     setInterval(() => {
                         that.rws.send('-hb-')
-                    }, 1000 * 60 * 3)
+                    }, 5)
                 }
                 this.rws.onmessage = (e) => {
                     that.wsMessage(e)
