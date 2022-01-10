@@ -277,6 +277,7 @@
         </section>
         <section class="msg-control-list">
             <input type="file" name="images" accept="image/*" ref="file" v-show="false" @change="uploadImg">
+            <Button type="text" class="msg-reload msg-control" @click="$refs['content'].init()" title="消息清屏"><Icon custom="fa fa-refresh"/></Button>
             <Button type="text" class="msg-image msg-control" @click="$refs['file'].click()" title="上传图片"><Icon custom="fa fa-picture-o"/></Button>
             <Button type="text" class="msg-face msg-control" @click="emojiForm = !emojiForm" title="发表情"><Icon custom="fa fa-smile-o"/></Button>
             <Button type="text" class="msg-redpacket msg-control" title="发红包" @click="redpacketForm=!redpacketForm">

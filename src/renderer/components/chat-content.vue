@@ -683,8 +683,8 @@
 
                 this.rws.onopen = (e) => {
                     setInterval(() => {
-                        that.rws.send('-hb-')
-                    }, 5)
+                        that.rws.send('-hb-') // 心跳包
+                    }, 3 * 60 * 1000)
                 }
                 this.rws.onmessage = (e) => {
                     that.wsMessage(e)
