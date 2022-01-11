@@ -386,6 +386,14 @@
         color: #c6cbd1;
     }
 }
+.netease-music {
+    position: relative;
+    .netease-cover {
+        z-index: 500;
+        position: absolute;
+        left: 10px; right: 10px; top: 10px; bottom: 18px;
+    }
+}
 </style>
 
 <template>
@@ -427,7 +435,7 @@
                     </div>
                     <div class="msg-contain" v-if="!getRedPacket(item)">
                         <div class="arrow" v-if="item.content.replace(/\n/g, '').match(/>[^<]+?</g)"/>
-                        <div class="msg-content md-style" v-html="formatContent(item.content)" v-if="item.content.replace(/\n/g, '').match(/>[^<]+?</g)"/>
+                        <div class="msg-content md-style" :data-html="item.content" v-html="formatContent(item.content)" v-if="item.content.replace(/\n/g, '').match(/>[^<]+?</g)"/>
                         <span class="msg-img" v-if="!item.content.replace(/\n/g, '').match(/>[^<]+?</g)" v-html="formatContent(item.content)"></span>
                         <span class="plus-one" @click="followMsg(item)" v-if="item.dbUser.length && item.oId == firstMsg.oId">+1</span>
                     </div>
@@ -491,7 +499,10 @@
         },
         mounted () {
             this.init();
-            
+            document.addEventListener('click', (ev) => {
+                let target = ev.target;
+                if (target.className == 'netease-cover') this.playMusic(target.dataset.id);
+            }, false)
         },
         data () {
             return {
@@ -503,7 +514,8 @@
                 loading: false,
                 menuTarget: null,
                 redpacketData: null,
-                hasNewMsg: false
+                hasNewMsg: false,
+                playSong: null
             }
         },
         watch: {
@@ -551,7 +563,23 @@
                 this.menu = {};
                 this.redpacketData = null;
             },
-            scrollChat() {
+            reset () {
+                this.content = this.content.slice(0, 48);
+                this.page = 2;
+                this.$refs['chat-content'].scrollTo(0, 0)
+            },
+            async playMusic (id) {
+                let infoApi = `http://music.163.com/api/song/detail/?id=${id}&ids=%5B${id}%5D`; 
+                let rsp = await this.$http.get(infoApi);
+                rsp = rsp.data;
+                if (rsp.code != 200 || !rsp.songs.length) return;
+                this.playSong = {
+                    name: rsp.songs[0].name,
+                    img: rsp.songs[0].album.picUrl,
+                    url: `http://music.163.com/song/media/outer/url?id=${id}`
+                };
+            },
+            scrollChat () {
                 if (this.$refs['chat-content'].scrollTop == 0) this.hasNewMsg = false;
             },
             async openRedpacket(item) {
@@ -626,6 +654,7 @@
             },
             formatContent(content) {
                 return content.replace(/(<a )/g, '$1target="_blank" ')
+                    .replace(/(<iframe[^>]*?src="(https:)*\/\/music.163.com\/outchain\/player\?type=\d&amp;id=(\d+)[^"]*?">\s*<\/iframe>)/, '<div class="netease-music"><div class="netease-cover" data-id="$3"></div>$1</div>')
                     .replace(/(<img )/g, '$1data-action="preview" ');
             },
             async init() {

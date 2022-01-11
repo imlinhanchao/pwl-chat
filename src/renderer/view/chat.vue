@@ -70,7 +70,7 @@
 }
 .msg-control {
     float: right;
-    padding: 0 8px;
+    padding: 1px 5px;
     font-size: 1.2em;
 }
 .emoji-tab {
@@ -277,7 +277,7 @@
         </section>
         <section class="msg-control-list">
             <input type="file" name="images" accept="image/*" ref="file" v-show="false" @change="uploadImg">
-            <Button type="text" class="msg-reload msg-control" @click="$refs['content'].init()" title="消息清屏"><Icon custom="fa fa-refresh"/></Button>
+            <Button type="text" class="msg-reload msg-control" @click="$refs['content'].reset()" title="消息清屏"><Icon custom="fa fa-refresh"/></Button>
             <Button type="text" class="msg-image msg-control" @click="$refs['file'].click()" title="上传图片"><Icon custom="fa fa-picture-o"/></Button>
             <Button type="text" class="msg-face msg-control" @click="emojiForm = !emojiForm" title="发表情"><Icon custom="fa fa-smile-o"/></Button>
             <Button type="text" class="msg-redpacket msg-control" title="发红包" @click="redpacketForm=!redpacketForm">
@@ -646,8 +646,8 @@
             toMusicBox(msg) {
                 let songRegexp = /http(?:s):\/\/music.163.com\/(?:#\/|)song\?id=(\d+)(&[\w=]+)*/g;
                 let listRegexp = /http(?:s):\/\/music.163.com\/(?:#\/|)album\?id=(\d+)(&[\w=]+)*/g;
-                if (msg.match(songRegexp)) msg = msg.replace(songRegexp, `<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=280 height=52 src="//music.163.com/outchain/player?type=2&id=$1&auto=0&height=32"></iframe>`);
-                else if (msg.match(listRegexp)) msg = msg.replace(listRegexp, `<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=280 height=210 src="//music.163.com/outchain/player?type=1&id=$1&auto=0&height=430"></iframe>`)
+                if (msg.match(songRegexp)) msg = msg.replace(songRegexp, `<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=100% height=52 src="//music.163.com/outchain/player?type=2&id=$1&auto=0&height=32"></iframe>`);
+                else if (msg.match(listRegexp)) msg = msg.replace(listRegexp, `<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=100% height=210 src="//music.163.com/outchain/player?type=1&id=$1&auto=0&height=430"></iframe>`)
                 return msg;
             },
             async wsPush(ev) {

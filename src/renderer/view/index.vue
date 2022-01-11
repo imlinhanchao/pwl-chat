@@ -238,6 +238,9 @@ header.header {
     [alt="图片表情"] {
         max-width: 100px;
     }
+    iframe {
+        border: 0;
+    }
 }
 </style>
 
