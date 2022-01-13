@@ -1,3 +1,9 @@
+:root {
+    --plyr-audio-control-color: #aca49a;
+    --plyr-audio-controls-background: rgba(35, 36, 37, 0.78);
+    --plyr-color-main: #d23f31;
+}
+
 html {
     height: 100%;
 }

@@ -7,6 +7,9 @@ import Vue from 'vue'
 import axios from 'axios'
 import VueWorker from 'vue-worker'
 
+import VuePlyr from 'vue-plyr'
+import 'vue-plyr/dist/vue-plyr.css'
+
 import App from './App'
 import router from './router'
 import store from './store'
@@ -26,6 +29,13 @@ config.domain = 'fishpi.cn'
 
 Vue.use(iView)
 Vue.use(VueWorker)
+Vue.use(VuePlyr, {
+  plyr: {
+    controls: [
+      'play', 'captions', 'progress', 'current-time', 'volume', 'settings', 
+    ]
+  }
+})
 Vue.locale = () => {};
 
 if (!process.env.IS_WEB) Vue.use(require('vue-electron'))

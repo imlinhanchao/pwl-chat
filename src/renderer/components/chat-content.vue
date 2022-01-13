@@ -337,6 +337,15 @@
         left: -14px;
     }
 }
+.audio-form {
+    height: 3em;
+    .audio-control {
+        position: fixed;
+        bottom: 0;
+        left: 10px;
+        right: 15px;
+    }
+}
 </style>
 <style lang="less">
 .ivu-tabs.ivu-tabs-card>.ivu-tabs-bar .ivu-tabs-tab {
@@ -451,6 +460,13 @@
         <div class="msg-more" @click="load(page + 1)" v-if="content.length < 1999">
             <Icon custom="fa fa-caret-down" v-if="!loading"/>
             <Icon custom="fa fa-circle-o-notch fa-spin" v-if="loading"/>
+        </div>
+        <div class="audio-form" v-if="playSong">
+            <div class="audio-control">
+                <vue-plyr :title="playSong.name">
+                    <audio :title="playSong.name" crossorigin playsinline autoplay controls :src="playSong.url"></audio>
+                </vue-plyr>
+            </div>
         </div>
         <section class="redpacket" v-if="redpacketData != null">
             <section class="redpacket-bg"></section>
