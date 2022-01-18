@@ -112,7 +112,7 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    z-index:50;
+    z-index:500;
     .msg-menu-item {
         padding: 5px 10px;
         word-break: keep-all;
@@ -345,6 +345,33 @@
         left: 10px;
         right: 15px;
     }
+    .audio-title {
+        left: 10px;
+        right: 15px;
+        border-radius: 5px 5px 0 0;
+        position: fixed;
+        bottom: 52px;
+        background: var(--plyr-audio-controls-background,#fff);
+        font-size: .8em;
+        right: 1em;
+        padding: 0 5px;
+        vertical-align: middle;
+        text-align: center;
+        .audio-control-btn {
+            vertical-align: middle;
+            cursor: pointer;
+        }
+        .audio-close {
+            position: absolute;
+            left: 5px;
+            top: 8px;
+        }
+        .audio-remove {
+            position: absolute;
+            right: 5px;
+            top: 8px;
+        }
+    }
 }
 </style>
 <style lang="less">
@@ -398,9 +425,10 @@
 .netease-music {
     position: relative;
     .netease-cover {
-        z-index: 500;
+        z-index: 200;
         position: absolute;
         left: 10px; right: 10px; top: 10px; bottom: 18px;
+        cursor: pointer;
     }
 }
 </style>
@@ -423,6 +451,8 @@
                 <div :ref="`msg-${item.oId}`" :data-id="item.oId" class="msg-item-contain">
                     <div class="msg-user" :title="item.userNickname">{{item.userName}}</div>
                     <div class="msg-menu" :ref="`msg-menu-${item.oId}`" v-if="menu[item.oId]" :style="{ top: menu[item.oId].y + 'px', left: menu[item.oId].x + 'px' }">
+                        <div class="msg-menu-item" v-if="getNeteaseMusic(item)" @click="pushSong(item)">加入播放列表</div>
+                        <div class="msg-menu-item" v-if="inPlayList(item)" @click="removeSong(item)">移除播放列表</div>
                         <div class="msg-menu-item" v-if="item.userName != current.userName" @click="atMsg(item)">@{{item.userName}}</div>
                         <div class="msg-menu-item" v-if="hasFace(item.content)" @click="addFace">添加到表情包</div>
                         <div class="msg-menu-item" v-if="!getRedPacket(item)" @click="quoteMsg(item)">回复</div>
@@ -461,11 +491,19 @@
             <Icon custom="fa fa-caret-down" v-if="!loading"/>
             <Icon custom="fa fa-circle-o-notch fa-spin" v-if="loading"/>
         </div>
-        <div class="audio-form" v-if="playSong">
+        <div class="audio-form" v-if="playSongs.length">
+            <div class="audio-title" :title="playSongs[playIndex].artist + ' - ' +playSongs[playIndex].name">
+                <Icon custom="fa fa-times audio-control-btn audio-close" @click="playSongs = []"></Icon> 
+                <Icon custom="fa fa-trash-o audio-control-btn audio-remove" @click="delSong"></Icon> 
+                <Icon custom="fa fa-step-backward audio-control-btn" v-if="playSongs.length > 1" @click="prevSong"></Icon> 
+                {{playSongs[playIndex].artist}} - {{playSongs[playIndex].name}}
+                <Icon custom="fa fa-step-forward audio-control-btn" v-if="playSongs.length > 1" @click="nextSong"></Icon> 
+            </div>
             <div class="audio-control">
-                <vue-plyr :title="playSong.name">
-                    <audio :title="playSong.name" crossorigin playsinline autoplay controls :src="playSong.url"></audio>
-                </vue-plyr>
+                <player ref="audio" @ended="playSongs.length == 1 ? $refs.audio.player.play() : playIndex = (playIndex + 1) % playSongs.length" :options="{
+                    plyr: {
+                    }
+                }" :source="playSongs[playIndex]"></player>
             </div>
         </div>
         <section class="redpacket" v-if="redpacketData != null">
@@ -503,10 +541,13 @@
     import { ipcRenderer } from 'electron'
     import ReconnectingWebSocket from "reconnecting-websocket";
     import emoji from '../emoji';
+    import player from './player.vue';
 
     export default {
+        components: { player },
         name: 'chat',
         component: {
+            player
         },
         props: {
             current: {
@@ -531,7 +572,8 @@
                 menuTarget: null,
                 redpacketData: null,
                 hasNewMsg: false,
-                playSong: null
+                playSongs: [],
+                playIndex: 0
             }
         },
         watch: {
@@ -584,16 +626,26 @@
                 this.page = 2;
                 this.$refs['chat-content'].scrollTo(0, 0)
             },
-            async playMusic (id) {
+            async playMusic (id, push) {
                 let infoApi = `http://music.163.com/api/song/detail/?id=${id}&ids=%5B${id}%5D`; 
                 let rsp = await this.$http.get(infoApi);
                 rsp = rsp.data;
                 if (rsp.code != 200 || !rsp.songs.length) return;
-                this.playSong = {
+                if(!push) this.playSongs = [{
+                    id,
+                    artist: rsp.songs[0].artists.map(a => a.name).join(','),
                     name: rsp.songs[0].name,
                     img: rsp.songs[0].album.picUrl,
                     url: `http://music.163.com/song/media/outer/url?id=${id}`
-                };
+                }];
+                else if(!this.playSongs.find(p => p.id == id)) this.playSongs.push({
+                    id,
+                    artist: rsp.songs[0].artists.map(a => a.name).join(','),
+                    name: rsp.songs[0].name,
+                    img: rsp.songs[0].album.picUrl,
+                    url: `http://music.163.com/song/media/outer/url?id=${id}`
+                });
+                if(this.playIndex >= this.playSongs.length) this.playIndex = 0;
             },
             scrollChat () {
                 if (this.$refs['chat-content'].scrollTop == 0) this.hasNewMsg = false;
@@ -667,6 +719,43 @@
                     this.$Message.error(rsp.msg);
                     return;
                 }
+            },
+            getNeteaseMusic(item) {
+                return !this.inPlayList(item) && item.content.match(/(<iframe[^>]*?src="(https:)*\/\/music.163.com\/outchain\/player\?type=\d&amp;id=(\d+)[^"]*?">\s*<\/iframe>)/);
+            },
+            prevSong() {
+                this.playIndex = (this.playIndex - 1 + this.playSongs.length) % this.playSongs.length
+            },
+            nextSong() {
+                this.playIndex = (this.playIndex + 1) % this.playSongs.length
+            },
+            delSong() {
+                this.playSongs.splice(this.playIndex, 1)
+                this.nextSong()
+            },
+            removeSong(item) {
+                this.playSongs = this.playSongs.filter(p => item.songs.indexOf(p.id) < 0)
+                if(this.playIndex >= this.playSongs.length) this.playIndex = 0;
+            },
+            inPlayList(item) {
+                if (!item.songs) {
+                    item.songs = []
+                    let mat = item.content.match(/(<iframe[^>]*?src="(https:)*\/\/music.163.com\/outchain\/player\?type=\d&amp;id=(\d+)[^"]*?">\s*<\/iframe>)/g)
+                    if(mat) mat.forEach(m => {
+                        let id = m.match(/(<iframe[^>]*?src="(https:)*\/\/music.163.com\/outchain\/player\?type=\d&amp;id=(\d+)[^"]*?">\s*<\/iframe>)/)[3];
+                        item.songs.push(id)
+                    })
+                }
+                return item.songs && this.playSongs.find(p => item.songs.indexOf(p.id) >= 0)
+            },
+            pushSong(item) {
+                item.songs = [];
+                let mat = item.content.match(/(<iframe[^>]*?src="(https:)*\/\/music.163.com\/outchain\/player\?type=\d&amp;id=(\d+)[^"]*?">\s*<\/iframe>)/g)
+                mat.forEach(m => {
+                    let id = m.match(/(<iframe[^>]*?src="(https:)*\/\/music.163.com\/outchain\/player\?type=\d&amp;id=(\d+)[^"]*?">\s*<\/iframe>)/)[3];
+                    this.playMusic(id, true);
+                    item.songs.push(id)
+                })
             },
             formatContent(content) {
                 return content.replace(/(<a )/g, '$1target="_blank" ')

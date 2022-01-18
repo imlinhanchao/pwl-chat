@@ -175,7 +175,7 @@
     }
 }
 .msg-redpacket {
-    padding: 0 8px;
+    padding: 2px 4px;
     svg {
         width: 25px;
         height: 25px;
