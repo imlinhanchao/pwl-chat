@@ -2,7 +2,8 @@ import {
     Menu,
     Tray,
     ipcMain,
-    nativeImage
+    nativeImage,
+    ipcRenderer
 } from 'electron'
 import path from 'path'
 import info from '../../../package.json'
@@ -12,8 +13,8 @@ let rootPath = process.env.NODE_ENV == 'development' ?
     path.resolve(__dirname, '..', '..', '..') :
     process.resourcesPath
 
-var tray
-let create = (app, win) => {
+let tray
+let create = (app, win, setting) => {
     // tray
     let timer = null, tick = 0, count = 0;
     let icon = path.join(__static, 'icon', 'icon.png')
@@ -30,6 +31,12 @@ let create = (app, win) => {
             type: 'normal',
             click: () => {
                 win.show()
+            }
+        },{
+            label: 'Setting',
+            type: 'normal',
+            click: () => {
+                setting.show()
             }
         },
         {

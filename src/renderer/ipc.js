@@ -3,6 +3,12 @@ import {
 } from 'electron'
 
 export default {
+    listen(event, fn) {
+        ipcRenderer.on(event, fn);
+    },
+    send(event, data) {
+        ipcRenderer.send(event, data)
+    },
     sendipc(event, {
         argv,
         fn

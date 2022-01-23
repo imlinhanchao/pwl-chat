@@ -48,27 +48,27 @@ let img = (app, url, size) => {
         url
     })
 
-    return imgWin.windows
+    return imgWin.window
 }
 
-let setting = (app, url, size) => {
+let setting = (app, size) => {
     let settingWin = new Win(app, {
         quitEvent(event) {
             //_app.quit()
             settingWin = null;
             return false;
         },
-        show: true,
+        show: false,
         frame: false,
         size,
         url: '/setting'
     })
 
-    return settingWin.windows
+    return settingWin.window
 }
 
 export default { 
-    create, show, hide, isVisable, isFocused, img, windows, get main () {
+    create, show, hide, isVisable, isFocused, img, setting, windows, get main () {
         return windows.main.win;
     }
 }

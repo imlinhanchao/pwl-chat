@@ -1,5 +1,6 @@
 import ipc from './ipc'
 import PWL from './pwl'
+import Setting from './setting'
 import fs from 'fs';
 import path from 'path';
 
@@ -16,7 +17,7 @@ import 'iview/dist/styles/iview.css'
 import './theme/index.css'
 import './theme/font-awesome.css'
 import './theme/highlight.css'
-import { ipcRenderer } from 'electron';
+import { ipcRenderer, Notification } from 'electron';
 
 let rootPath = process.env.NODE_ENV == 'development' ? 
     path.resolve(__dirname, '..', '..') :
@@ -59,13 +60,18 @@ new Vue({
     host: '',
     token: '',
     pwl: new PWL(),
-    config
+    setting: new Setting(),
+    config,
+    ipc,
   },
   methods: {
     sendipc: ipc.sendipc,
     sendipcSync: ipc.sendipcSync,
     makePWL(token) {
       this.pwl = new PWL(token);
+    },
+    notice(title, body) {
+      this.ipc.send('win-notice', { title, body })
     },
     async relogin() {
       let login = {

@@ -560,6 +560,12 @@
                 let target = ev.target;
                 if (target.className == 'netease-cover') this.playMusic(target.dataset.id);
             }, false)
+            this.careUsers = this.$root.setting.value.careUsers;
+            this.messageShield = this.$root.setting.value.messageShield;
+            this.$root.ipc.listen('setting-change', (event, setting) => {
+                this.careUsers = this.$root.setting.value.careUsers;
+                this.messageShield = this.$root.setting.value.messageShield;
+            })
         },
         data () {
             return {
@@ -573,7 +579,10 @@
                 redpacketData: null,
                 hasNewMsg: false,
                 playSongs: [],
-                playIndex: 0
+                playIndex: 0,
+                messageShield: [],
+                careUsers: [],
+                careOnlines: []
             }
         },
         watch: {
@@ -834,13 +843,47 @@
                 let raw = await this.$root.pwl.raw(item.oId);
                 this.$emit('send', raw);
             },
+            isShield(msg) {
+                return this.messageShield.find(s => {
+                    switch(s.type)
+                    {
+                        case 'username': return msg.userName == s.value;
+                        case 'content': return msg.content.match(new RegExp(s.value)) != null;
+                        case 'redpacket': return !!this.getRedPacket(msg);
+                        case 'redpacketStatus': return msg.type == 'redPacketStatus';
+                    }
+                    return false;
+                }) != null
+            },
+            caseNotice(msg) {
+                if (msg.type != 'msg') return;
+                if (this.careUsers.indexOf(msg.userName) < 0) return;
+                let text = ''
+                if(!this.getRedPacket(msg)) {
+                    let div = document.createElement('div')
+                    div.innerHTML = msg.content;
+                    text = div.textContent;
+                }
+                this.$root.notice(`你的特别关心：${msg.userNickname}`,
+                    this.getRedPacket(msg) ? '发红包啦！' : `说 ${text.slice(0, 20)}${text.length > 20 ? '...' : ''}`)
+            },
             wsMessage(e) {
                 let msg = JSON.parse(e.data)
                 this.$emit('wsMessage', e);
                 switch (msg.type) {
-                    case "online":  //在线人数
+                    case "online":  {//在线人数 
+                        let careOnlines = msg.users.filter(u => this.careUsers.indexOf(u.userName) >= 0)
+                        let onlines = careOnlines.filter(c => this.careOnlines.indexOf(c.userName) < 0);
+                        if (onlines.length > 0) {
+                            let text = onlines.length > 1 ? 
+                                onlines.map(o => o.userName).slice(0, -1).join(',') + `和${onlines.slice(-1)[0].userName}上线啦！` :
+                                `${onlines[0].userName} 上线啦！`;
+                            this.$root.notice(`你的特别关心`, text);
+                        }
+                        this.careOnlines = careOnlines.map(c => c.userName);
                         document.getElementById('win-title').innerHTML = `摸鱼派 - 聊天室(${msg.onlineChatCnt})`
                         break;
+                    }
                     case "revoke":  //撤回
                         for (let i = 0; i < this.content.length; i++) {
                             let c = this.content[i];
@@ -857,6 +900,8 @@
                         break;
                     case "msg":  //消息
                     case "redPacketStatus":
+                        if (this.isShield(msg)) break;
+                        this.caseNotice(msg);
                         msg.dbUser = []
                         if (msg.type == 'msg' && !this.getRedPacket(msg)
                         && msg.content == this.content[0].content) {

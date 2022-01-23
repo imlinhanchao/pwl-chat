@@ -1,5 +1,5 @@
 import {
-    ipcMain, dialog
+    ipcMain, dialog, Notification
 } from 'electron'
 import windows from './windows'
 import fs from 'fs'
@@ -11,8 +11,11 @@ let rootPath = process.env.NODE_ENV == 'development' ?
     path.resolve(__dirname, '..', '..', '..') :
     process.resourcesPath
 
-
-let create = (app, win) => {
+let create = (app, win, setting) => {
+    ipcMain.on('win-setting-change', (event, argv) => {
+        win.windows.main.win.webContents.send('setting-change', argv);
+        setting.webContents.send('setting-change', argv);
+    })
 
     ipcMain.on('win-update', async (event, argv) => {
         let data = await Update.checkUpdate();
@@ -33,9 +36,17 @@ let create = (app, win) => {
     })
 
     ipcMain.on('win-opacity', (event, arg) => {
-        win.windows.main.win.setOpacity(arg ? .6 : 1)
+        win.windows.main.win.setOpacity(arg.enable ? arg.value / 100 : 1)
     })
 
+    ipcMain.on('win-setting', (event, arg) => {
+        setting.show();
+    })
+
+    ipcMain.on('win-notice', (event, arg) => {
+        new Notification(arg).show()
+    })
+    
     ipcMain.on('pwl-img', (event, argv) => {
         try {
             let size = argv.size;

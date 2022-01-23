@@ -19,6 +19,14 @@ body {
 input, select, textarea, button {
     font: inherit;
 }
+
+.no-border input.ivu-input{
+    border-color: transparent;
+    box-shadow: none;
+    background: transparent;
+    font-size: .8em;
+    height: auto;
+}
   
 .ivu-layout.ivu-layout-has-sider {
     height: inherit;

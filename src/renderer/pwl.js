@@ -49,6 +49,18 @@ class PWL {
         }
     }
 
+    async user(username) {
+        try {
+            let rsp = await this.request({
+                url: `user/${username}?apiKey=${this.token}`
+            })
+
+            return rsp.data
+        } catch (e) {
+            return { code: -1, msg: e.message };
+        }
+    }
+
     async history(page=1) {
         try {
             let rsp = await this.request({

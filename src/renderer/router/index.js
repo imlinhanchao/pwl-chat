@@ -31,6 +31,9 @@ export default new Router({
         {
             path: '/setting',
             name: 'setting',
+            meta: {
+                title: '设置'
+            },
             component: require('@/view/setting').default,
         },
         {

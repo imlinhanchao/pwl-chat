@@ -251,7 +251,7 @@ header.header {
         <span id="win-title" class="drag">{{ $root.title || '摸鱼派'}}</span></h1>
         <span class="control no-drag">
             <Button type="text" @click="handleMin"><Icon custom="fa fa-minus"></Icon></Button>
-            <Button type="text" @click="handleOpacity" class="win-opacity-btn" :class="{ 'win-checked': opacity }"><span class="cirle-empty"></span></Button>
+            <Button type="text" @click="handleOpacity" class="win-opacity-btn" :class="{ 'win-checked': opacity.enable }"><span class="cirle-empty"></span></Button>
             <Button type="text" @click="handleTop" class="win-top-btn" :class="{ 'win-checked': wintop }"><Icon custom="fa fa-thumb-tack"></Icon></Button>
             <Button type="text" @click="handleClose"><Icon custom="fa fa-times"></Icon></Button>
         </span>
@@ -301,19 +301,30 @@ header.header {
                 }
             })()
         }
-        this.wintop = localStorage.getItem('window-top') == '1';
+        this.wintop = this.$root.setting.value.topWindow;
         ipcRenderer.send('win-top', this.wintop)
-        this.opacity = localStorage.getItem('window-opacity') == '1';
+        this.opacity = this.$root.setting.value.opacity;
         ipcRenderer.send('win-opacity', this.opacity)
         this.timer = setInterval(async () => {
             this.liveness = await this.$root.pwl.liveness();
             if (this.liveness.code == 401) this.$root.relogin();
         }, 60000)
+        this.$root.ipc.listen('setting-change', (event, setting) => {
+            this.opacity = setting.opacity;
+            this.wintop = setting.topWindow;
+            this.$root.setting.setting = setting;
+            ipcRenderer.send('win-opacity', this.opacity)
+            ipcRenderer.send('win-top', this.wintop)
+        })
+
     },
     data () {
         return {
             wintop: false,
-            opacity: false,
+            opacity: {
+                enable: false,
+                value: 60
+            },
             liveness: 0,
             timer: 0,
             screen: {
@@ -368,14 +379,16 @@ header.header {
         handleTop() {
             this.wintop = !this.wintop;
             ipcRenderer.send('win-top', this.wintop)
-            localStorage.setItem('window-top', this.wintop ? '1' : '0')
+            this.$root.setting.config('topWindow', this.wintop);
+            this.$root.ipc.send('win-setting-change', this.$root.setting.value)
         },
         
         handleOpacity() {
-            this.opacity = !this.opacity;
+            this.opacity.enable = !this.opacity.enable;
             ipcRenderer.send('win-opacity', this.opacity)
-            localStorage.setItem('window-opacity', this.opacity ? '1' : '0')
-        },
+            this.$root.setting.config('opacity', this.opacity);
+            this.$root.ipc.send('win-setting-change', this.$root.setting.value)
+       },
 
         async check_update() {
             console.log('check update')
