@@ -439,7 +439,7 @@
             @click="$refs['chat-content'].scrollTo(0, 0)">
             <i class="fa fa-angle-double-up"></i> 新消息
         </div>
-        <div v-for="(item, i) in content" v-bind:key="(item.type || 'msg') + '_' + item.oId + (item.whoGot || '')" :data-key="(item.type || 'msg') + '_' + item.oId + (item.whoGot || '')">
+        <div v-for="(item, i) in content" v-if="!isShield(item)" v-bind:key="(item.type || 'msg') + '_' + item.oId + (item.whoGot || '')" :data-key="(item.type || 'msg') + '_' + item.oId + (item.whoGot || '')">
             <div class="redpacket-status" v-if="item.type == 'redPacketStatus'">
                 <svg><use xlink:href="#redPacketIcon"></use></svg> {{item.whoGot}} 抢到了 {{item.whoGive}} 的 <a href="#" @click="openRedpacket(item)">红包</a> ({{item.got}}/{{item.count}})
             </div>
@@ -845,10 +845,11 @@
             },
             isShield(msg) {
                 return this.messageShield.find(s => {
+                    if (s.value == '' && !s.type.startsWith('redpacket')) return false;
                     switch(s.type)
                     {
                         case 'username': return msg.userName == s.value;
-                        case 'content': return msg.content.match(new RegExp(s.value)) != null;
+                        case 'content': return (msg.content || '').match(new RegExp(s.value)) != null;
                         case 'redpacket': return !!this.getRedPacket(msg);
                         case 'redpacketStatus': return msg.type == 'redPacketStatus';
                     }
@@ -876,7 +877,7 @@
                         let onlines = careOnlines.filter(c => this.careOnlines.indexOf(c.userName) < 0);
                         if (onlines.length > 0) {
                             let text = onlines.length > 1 ? 
-                                onlines.map(o => o.userName).slice(0, -1).join(',') + `和${onlines.slice(-1)[0].userName}上线啦！` :
+                                onlines.map(o => o.userName).slice(0, -1).join('，') + ` 和 ${onlines.slice(-1)[0].userName} 上线啦！` :
                                 `${onlines[0].userName} 上线啦！`;
                             this.$root.notice(`你的特别关心`, text);
                         }
@@ -900,7 +901,6 @@
                         break;
                     case "msg":  //消息
                     case "redPacketStatus":
-                        if (this.isShield(msg)) break;
                         this.caseNotice(msg);
                         msg.dbUser = []
                         if (msg.type == 'msg' && !this.getRedPacket(msg)
@@ -911,6 +911,7 @@
                         else this.content.splice(0, 0, msg)
                         if (this.content.length > 2000) this.load(1);
                         if(msg.type == 'msg') {
+                            if (this.isShield(msg)) break;
                             ipcRenderer.send('sys-msg', msg);
                             this.hasNewMsg = this.$refs['chat-content'].scrollTop > 60
                                 

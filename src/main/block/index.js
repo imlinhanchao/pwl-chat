@@ -16,7 +16,7 @@ let create = (app) => {
     }
     let win = windows.create(app)
     setting = windows.setting(app, {
-        width: 350, height: 500
+        width: 400, height: 500
     })
 
     tray.create(app, windows, setting)
