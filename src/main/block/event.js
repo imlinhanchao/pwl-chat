@@ -14,7 +14,7 @@ let rootPath = process.env.NODE_ENV == 'development' ?
 let create = (app, win, setting) => {
     ipcMain.on('win-setting-change', (event, argv) => {
         win.windows.main.win.webContents.send('setting-change', argv);
-        setting.webContents.send('setting-change', argv);
+        setting().webContents.send('setting-change', argv);
     })
 
     ipcMain.on('win-update', async (event, argv) => {

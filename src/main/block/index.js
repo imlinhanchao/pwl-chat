@@ -15,12 +15,18 @@ let create = (app) => {
 }`)
     }
     let win = windows.create(app)
-    setting = windows.setting(app, {
-        width: 400, height: 500
-    })
+    function createSetting() {
+        let win = windows.setting(app, {
+            width: 400, height: 500
+        }, () => {
+            setting = null;
+        })
+        return win;
+    }
+    setting = createSetting();
 
-    tray.create(app, windows, setting)
-    events.create(app, windows, setting)
+    tray.create(app, windows, () => (setting || (setting = createSetting())))
+    events.create(app, windows, () => (setting || (setting = createSetting())))
     return win;
 }
 

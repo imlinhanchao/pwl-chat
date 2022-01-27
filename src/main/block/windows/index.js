@@ -51,11 +51,11 @@ let img = (app, url, size) => {
     return imgWin.window
 }
 
-let setting = (app, size) => {
+let setting = (app, size, quit) => {
     let settingWin = new Win(app, {
         quitEvent(event) {
             //_app.quit()
-            settingWin = null;
+            if(quit) quit();
             return false;
         },
         show: false,

@@ -162,7 +162,7 @@ header {
     },
     methods: {
         handleClose() {
-
+            window.close()
         },
         changeSetting() {
             this.$nextTick(() => {

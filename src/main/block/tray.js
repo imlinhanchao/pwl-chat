@@ -36,7 +36,7 @@ let create = (app, win, setting) => {
             label: 'Setting',
             type: 'normal',
             click: () => {
-                setting.show()
+                setting().show()
             }
         },
         {
