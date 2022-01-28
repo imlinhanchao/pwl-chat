@@ -498,7 +498,7 @@
                         if (items[i].type.indexOf('html') !== -1) {
                             let files = await this.htmlGetImg(items[i])
                             files = files || []
-                            files = files.map(f => constructFileFromLocalFileData(new LocalFileData(f.replace(/file:\/\/\//g, ''))))
+                            files = files.map(f => f.startsWith('file:') ? constructFileFromLocalFileData(new LocalFileData(f.replace(/file:\/\/\//g, ''))) : f)
                             file = file.concat(files);
                         }
                     }
@@ -574,17 +574,23 @@
             },
             async uploadImg(ev) {
                 let files = Array.from(ev.target.files)
-                let rsp = await this.$root.pwl.upload(files);
-                if (!rsp) return;
-                if (rsp.code != 0) {
-                    this.$Message.error(rsp.msg);
-                    return;
+                if (files.length > 0 && files[0] instanceof File)
+                {
+                    let rsp = await this.$root.pwl.upload(files);
+                    if (!rsp) return;
+                    if (rsp.code != 0) {
+                        this.$Message.error(rsp.msg);
+                        return;
+                    }
+                    let fileData = rsp.data.succMap;
+                    let filenames = Object.keys(fileData)
+                    
+                    this.lastCursor = this.msgCursor();
+                    this.appendMsg({ regexp: null, data: filenames.map(f => `![${f}](${fileData[f]})`).join('') }); 
                 }
-                let fileData = rsp.data.succMap;
-                let filenames = Object.keys(fileData)
-                
-                this.lastCursor = this.msgCursor();
-                this.appendMsg({ regexp: null, data: filenames.map(f => `![${f}](${fileData[f]})`).join('') }); 
+                else {
+                    this.appendMsg({ regexp: null, data: files.map(f => `![](${f})`).join('') }); 
+                }
             },
             msgCursor() {
                 return this.$refs['message'].$el.querySelector('input').selectionStart
