@@ -59,7 +59,10 @@ header {
         padding: 5px;
         border-bottom: 1px solid #565758;
         .shield-type {
-            width: 180px;
+            width: 100%;
+            margin-right: 5px;
+        }
+        .shield-value {
             margin-right: 5px;
         }
     }
@@ -98,7 +101,7 @@ header {
                                 <Option v-for="s in shieldType" :value="s.value" :key="s.value">{{ s.text }}</Option>
                             </Select>
                         </section>
-                        <section class="shield-value">
+                        <section class="shield-value" v-if="!m.type.startsWith('redpacket')">
                             <Input v-model="m.value" @on-change="changeSetting"/>
                         </section>
                         <Button type="text" @click="setting.messageShield.splice(i, 1) && changeSetting()"><Icon custom="fa fa-trash-o"/></Button>
