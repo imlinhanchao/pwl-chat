@@ -54,6 +54,7 @@ let img = (app, url, size) => {
 
 let setting = (app, size, quit) => {
     let settingWin = new Win(app, {
+        parent: windows.main.win,
         quitEvent(event) {
             //_app.quit()
             if(quit) quit();
