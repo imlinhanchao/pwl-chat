@@ -39,8 +39,8 @@ header {
     overflow: auto;
 }
 .img {
-    max-width: calc(100vw - 50px); max-height: calc(100vh - 80px);
     margin: auto;
+    user-select: none;
 }
 </style>
 
@@ -55,7 +55,12 @@ header {
         </span>
     </header>
     <Content class="img-content no-drag" ref="content">
-        <img @load="loadHandle" ref="img" class="img" v-if="image" :src="image" @wheel="wheelHandle" :style="{ width: width + 'px', maxWidth, maxHeight, margin }"/>
+        <img draggable="false"
+            @load="loadHandle" ref="img" class="img" 
+            v-if="image" :src="image" 
+            @mousedown="dragStart" @mousemove="dragImg" @mouseup="dragOver"
+            @wheel="wheelHandle" :style="{ width: width + 'px', height: height + 'px', maxWidth, maxHeight, margin }"
+        />
     </Content>
 </div>
 </template>
@@ -78,9 +83,18 @@ header {
         return {
             image: '',
             width: undefined,
+            height: undefined,
             maxWidth: undefined,
             maxHeight: undefined,
-            margin: 'auto'
+            margin: 'auto',
+            dragPos: {
+                x: 0, y: 0
+            },
+            dragScroll: {
+                x: 0, y: 0
+            },
+            drag: false,
+            radio: 0,
         }
     },
     watch: {
@@ -91,13 +105,20 @@ header {
         imageName() {
             return this.image ? path.basename(this.image) : '';
         },
-        realWidth() {
-            return this.$refs['img'].width;
+        img() {
+            return this.$refs.img;
+        },
+        content() {
+            return this.$refs.content.$el
         }
     },
     methods: {
         loadHandle() {
-            this.width = this.realWidth
+            this.width = this.img.naturalWidth;
+            this.height = this.img.naturalHeight;
+            this.radio = this.height / this.width
+            this.maxWidth = window.innerWidth - 50
+            this.maxHeight = window.innerHeight - 80
         },
         handleClose() {
             window.close();
@@ -109,8 +130,30 @@ header {
         wheelHandle(ev) {
             if (ev.deltaY > 0 && this.maxWidth < 20) return;
             this.maxWidth = this.maxHeight = 'none';
-            this.width = Math.max(20, (this.width - ev.deltaY))
-            this.margin = 'auto ' + (this.$refs['content'].$el.offsetWidth - this.width) / 2 + 'px'
+            let width = Math.max(20, (this.width - ev.deltaY))
+            let height = width / this.radio;
+            let scroll = {
+                x: this.content.scrollLeft + (width - this.width) / 4,
+                y: this.content.scrollTop + (height - this.height) / 4,
+            }
+            this.width = width;
+            this.height = height;
+            this.$nextTick(() => {
+                this.content.scrollTo(scroll)
+            });
+        },
+        dragStart(ev) {
+            this.drag = true
+            this.dragPos = { x: ev.clientX, y: ev.clientY };
+            this.dragScroll = { x: this.content.scrollTop, y: this.content.scrollLeft };
+        },
+        dragImg(ev) {
+            if (!this.drag) return;
+            this.content.scrollTo(this.dragScroll.x - (ev.clientX - this.dragPos.x), 
+                            this.dragScroll.y - (ev.clientY - this.dragPos.y));
+        },
+        dragOver(ev) {
+            this.drag = false
         }
     }
   }
