@@ -16,7 +16,7 @@ let create = (app) => {
     })
 
     _app = app
-    return windows.main.windows;
+    return windows.main.win;
 }
 
 let show = () => {
@@ -37,6 +37,7 @@ let isFocused = () => {
 
 let img = (app, url, size) => {
     let imgWin = new Win(app, {
+        parent: windows.main.win,
         quitEvent(event) {
             //_app.quit()
             imgWin = null;

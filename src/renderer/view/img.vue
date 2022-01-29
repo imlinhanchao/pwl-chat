@@ -130,17 +130,8 @@ header {
         wheelHandle(ev) {
             if (ev.deltaY > 0 && this.maxWidth < 20) return;
             this.maxWidth = this.maxHeight = 'none';
-            let width = Math.max(20, (this.width - ev.deltaY))
-            let height = width / this.radio;
-            let scroll = {
-                x: this.content.scrollLeft + (width - this.width) / 4,
-                y: this.content.scrollTop + (height - this.height) / 4,
-            }
-            this.width = width;
-            this.height = height;
-            this.$nextTick(() => {
-                this.content.scrollTo(scroll)
-            });
+            this.width = Math.max(20, (this.width - ev.deltaY))
+            this.height = this.width / this.radio;
         },
         dragStart(ev) {
             this.drag = true
