@@ -1,5 +1,5 @@
 import {
-    ipcMain, dialog, Notification
+    ipcMain, dialog, Notification, shell
 } from 'electron'
 import windows from './windows'
 import fs from 'fs'
@@ -44,7 +44,13 @@ let create = (app, win, setting) => {
     })
 
     ipcMain.on('win-notice', (event, arg) => {
-        new Notification(arg).show()
+        let notice = new Notification(arg)
+        notice.on('click', () => {
+            if(!arg.url) win.show()
+            else shell.openExternal(arg.url)
+            if(arg.callback) event.sender.send('win-notice-callback-' + arg.callback)
+        })
+        notice.show();
     })
     
     ipcMain.on('pwl-img', (event, argv) => {

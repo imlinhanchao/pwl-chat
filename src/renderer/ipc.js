@@ -6,8 +6,10 @@ export default {
     listen(event, fn) {
         ipcRenderer.on(event, fn);
     },
-    send(event, data) {
-        ipcRenderer.send(event, data)
+    send(event, data, fn) {
+        let callback = fn ? parseInt(Math.random() * 10000).toString() : undefined;
+        if (fn) ipcRenderer.on(`${event}-callback-${callback}`, fn);
+        ipcRenderer.send(event, { ...data, callback })
     },
     sendipc(event, {
         argv,

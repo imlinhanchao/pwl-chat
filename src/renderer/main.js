@@ -12,8 +12,8 @@ import App from './App'
 import router from './router'
 import store from './store'
 
-import iView from 'iview'
-import 'iview/dist/styles/iview.css'
+import iView from 'view-design'
+import 'view-design/dist/styles/iview.css'
 import './theme/index.css'
 import './theme/font-awesome.css'
 import './theme/highlight.css'
@@ -70,8 +70,13 @@ new Vue({
     makePWL(token) {
       this.pwl = new PWL(token);
     },
-    notice(title, body) {
-      this.ipc.send('win-notice', { title, body })
+    toText(html) {
+      let div = document.createElement('div')
+      div.innerHTML = html;
+      return div.textContent;
+    },
+    async notice(title, body, url, callback) {
+      this.ipc.send('win-notice', { title, body, url }, callback)
     },
     async relogin() {
       let login = {

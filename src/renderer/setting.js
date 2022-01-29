@@ -10,6 +10,7 @@ class Setting {
             messageShield: [],
             careUsers: []
         }
+        this.setting.notice = this.setting.notice || {}
         localStorage.removeItem('window-opacity')
         localStorage.removeItem('window-top')
     }

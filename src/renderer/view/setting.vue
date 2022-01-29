@@ -120,6 +120,15 @@ header {
                     <Input @click.stop="false" @on-keyup.enter="pushCase" v-model="careUser" class="no-border" placeholder="用户名" />
                 </Button>
             </FormItem>
+            <FormItem label="消息提示">
+                <section style="display:flex;flex-wrap: wrap;">
+                    <Checkbox v-model="setting.notice.at" @on-change="changeSetting" >提及了我</Checkbox>
+                    <Checkbox v-model="setting.notice.reply" @on-change="changeSetting" >收到回复</Checkbox>
+                    <Checkbox v-model="setting.notice.sys" @on-change="changeSetting" >系统公告</Checkbox>
+                    <Checkbox v-model="setting.notice.talk"@on-change="changeSetting" >聊到了</Checkbox>
+                    <Input v-model="setting.notice.talkmsg" @on-change="changeSetting" size="small" placeholder="内容正则" style="width: auto;margin: 5px;"/>
+                </section>
+            </FormItem>
         </Form>
     </Content>
 </div>
@@ -147,7 +156,8 @@ header {
                 },
                 topWindow: false,
                 messageShield: [],
-                careUsers: []
+                careUsers: [],
+                notice: {}
             },
             shieldType: [
                 { value: 'username', text: '用户' },

@@ -474,7 +474,7 @@
                     </div>
                     <div class="msg-contain" v-if="!getRedPacket(item)">
                         <div class="arrow" v-if="item.content.replace(/\n/g, '').match(/>[^<]+?</g)"/>
-                        <div class="msg-content md-style" :data-html="item.content" v-html="formatContent(item.content)" v-if="item.content.replace(/\n/g, '').match(/>[^<]+?</g)"/>
+                        <div class="msg-content md-style" v-html="formatContent(item.content)" v-if="item.content.replace(/\n/g, '').match(/>[^<]+?</g)"/>
                         <span class="msg-img" v-if="!item.content.replace(/\n/g, '').match(/>[^<]+?</g)" v-html="formatContent(item.content)"></span>
                         <span class="plus-one" @click="followMsg(item)" v-if="item.dbUser.length && item.oId == firstMsg.oId">+1</span>
                     </div>
@@ -545,7 +545,7 @@
 
     export default {
         components: { player },
-        name: 'chat',
+        name: 'chat-list',
         component: {
             player
         },
@@ -562,9 +562,11 @@
             }, false)
             this.careUsers = this.$root.setting.value.careUsers;
             this.messageShield = this.$root.setting.value.messageShield;
+            this.noticeMsg = this.$root.setting.value.notice.talk ? this.$root.setting.value.notice.talkmsg : ''
             this.$root.ipc.listen('setting-change', (event, setting) => {
                 this.careUsers = this.$root.setting.value.careUsers;
                 this.messageShield = this.$root.setting.value.messageShield;
+                this.noticeMsg = this.$root.setting.value.notice.talk ? this.$root.setting.value.notice.talkmsg : ''
             })
         },
         data () {
@@ -582,7 +584,8 @@
                 playIndex: 0,
                 messageShield: [],
                 careUsers: [],
-                careOnlines: []
+                careOnlines: [],
+                noticeMsg: ''
             }
         },
         watch: {
@@ -861,9 +864,7 @@
                 if (this.careUsers.indexOf(msg.userName) < 0) return;
                 let text = ''
                 if(!this.getRedPacket(msg)) {
-                    let div = document.createElement('div')
-                    div.innerHTML = msg.content;
-                    text = div.textContent;
+                    text = this.$root.toText(msg.content);
                 }
                 this.$root.notice(`你的特别关心：${msg.userNickname}`,
                     this.getRedPacket(msg) ? '发红包啦！' : `说 ${text.slice(0, 20)}${text.length > 20 ? '...' : ''}`)
@@ -913,8 +914,10 @@
                         if(msg.type == 'msg') {
                             if (this.isShield(msg)) break;
                             ipcRenderer.send('sys-msg', msg);
+                            if (this.noticeMsg && msg.md.match(new RegExp(this.noticeMsg))) {
+                                this.$root.notice(`${msg.userName}说`, this.$root.toText(msg.content))
+                            }
                             this.hasNewMsg = this.$refs['chat-content'].scrollTop > 60
-                                
                         }
                         else if (msg.count == msg.got) {
                             for (let i = 0; i < this.content.length; i++) {

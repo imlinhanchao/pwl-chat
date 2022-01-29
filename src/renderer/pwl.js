@@ -146,6 +146,48 @@ class PWL {
         }
     }
 
+    async noticelist(type) {
+        if (this.token == '') return;
+        let rsp;
+        try {
+            rsp = await this.request({
+                url: `api/getNotifications?apiKey=${this.token}&type=${type}`,
+            });
+
+            return rsp.data;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    async makeRead(type) {
+        let rsp;
+        try {
+            rsp = await this.request({
+                url: `notifications/make-read/${type}?apiKey=${this.token}`,
+            });
+
+            return rsp.data;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    async count() {
+        if (this.token == '') return;
+        let rsp;
+        try {
+            rsp = await this.request({
+                url: `notifications/unread/count?apiKey=${this.token}`,
+            });
+
+            rsp.data.userNotifyStatus = rsp.data.userNotifyStatus != 0;
+            return rsp.data;
+        } catch (e) {
+            throw e;
+        }
+    }
+
     async emoji() {
         let rsp;
         try {

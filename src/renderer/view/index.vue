@@ -309,6 +309,10 @@ header.header {
             this.liveness = await this.$root.pwl.liveness();
             if (this.liveness.code == 401) this.$root.relogin();
         }, 60000)
+        this.noticeTimer = setInterval(async () => {
+            this.check_notice();
+        }, 10000)
+        this.check_notice();
         this.$root.ipc.listen('setting-change', (event, setting) => {
             this.opacity = setting.opacity;
             this.wintop = setting.topWindow;
@@ -327,6 +331,7 @@ header.header {
             },
             liveness: 0,
             timer: 0,
+            noticeTimer: 0,
             screen: {
                 height: window.innerHeight - 2,
                 width: window.innerWidth - 2
@@ -334,7 +339,13 @@ header.header {
             update: null,
             progress: 0,
             state: '更新',
-            updating: false
+            updating: false,
+            notice: {
+                at:[],
+                reply:[],
+                comment:[],
+                sys:[]
+            }
         }
     },
     watch: {
@@ -426,6 +437,71 @@ header.header {
                     }
                 }
             });
+        },
+        async noticeAt() {
+            let rsp = await this.$root.pwl.noticelist('at');
+            if (rsp.code != 0) return;
+            let data = rsp.data.filter(d => !d.hasRead && this.notice.at.indexOf(d.oId+d.dataType) < 0);
+            if (data.length == 0) return;
+            data.forEach(d => {
+                this.notice.at.push(d.oId+d.dataType);
+                if(d.dataType == 38) // 聊天室 @
+                    return this.$root.notice(`${d.userName}在聊天室 @ 你`, this.$root.toText(d.content), null, async () => {
+                        await this.$root.pwl.makeRead('at');
+                    })
+            })
+        },
+        async noticeReply() {
+            let rsp = await this.$root.pwl.noticelist('reply');
+            if (rsp.code != 0) return;
+            console.dir(rsp)
+            let data = rsp.data.filter(d => !d.hasRead && this.notice.reply.indexOf(d.oId) < 0);
+            if (data.length == 0) return;
+            data.forEach(d => {
+                this.notice.reply.push(d.oId);
+                return this.$root.notice(d.commentArticleTitle, 
+                `${d.userName}回复你 ${this.$root.toText(d.content)}`, `https://fishpi.cn${d.commentSharpURL}`)
+            })
+        },
+        async noticeComment() {
+            let rsp = await this.$root.pwl.noticelist('commented');
+            if (rsp.code != 0) return;
+            console.dir(rsp)
+            let data = rsp.data.filter(d => !d.hasRead && this.notice.comment.indexOf(d.oId) < 0);
+            if (data.length == 0) return;
+            data.forEach(d => {
+                this.notice.comment.push(d.oId);
+                return this.$root.notice(d.commentArticleTitle, 
+                `${d.commentAuthorName}评论你 ${this.$root.toText(d.commentContent)}`, `https://fishpi.cn${d.commentSharpURL}`)
+            })
+        },
+        async noticeSys() {
+            let rsp = await this.$root.pwl.noticelist('sys-announce');
+            if (rsp.code != 0) return;
+            console.dir(rsp)
+            let data = rsp.data.filter(d => !d.hasRead && this.notice.sys.indexOf(d.oId) < 0);
+            if (data.length == 0) return;
+            data.forEach(d => {
+                this.notice.sys.push(d.oId);
+                return this.$root.notice('摸鱼派系统通知', d.commentArticleTitle, `https://fishpi.cn/article/${d.oId}`)
+            })
+        },
+        async check_notice() {
+            let notice = await this.$root.pwl.count();
+            if (!notice) return;
+            let noticeSetting = this.$root.setting.value.notice;
+            if (notice.unreadAtNotificationCnt > 0 && noticeSetting.at) {
+                this.noticeAt();
+            }
+            if (notice.unreadCommentedNotificationCnt > 0 && noticeSetting.reply) {
+                this.noticeComment()
+            }
+            if (notice.unreadReplyNotificationCnt > 0 && noticeSetting.reply) {
+                this.noticeReply()
+            }
+            if (notice.unreadSysAnnounceNotificationCnt > 0 && noticeSetting.sys) {
+                this.noticeSys()
+            }
         }
     }
   }
