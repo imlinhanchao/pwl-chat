@@ -114,11 +114,11 @@ header {
     },
     methods: {
         loadHandle() {
-            this.width = this.img.naturalWidth;
-            this.height = this.img.naturalHeight;
-            this.radio = this.height / this.width
+            this.radio = this.img.naturalHeight / this.img.naturalWidth;
             this.maxWidth = window.innerWidth - 50
             this.maxHeight = window.innerHeight - 80
+            this.width = this.img.width > this.img.height ? this.maxWidth : this.maxHeight / this.radio;
+            this.height = this.img.height > this.img.width ? this.maxHeight : this.maxWidth * this.radio;
         },
         handleClose() {
             window.close();
@@ -131,7 +131,7 @@ header {
             if (ev.deltaY > 0 && this.maxWidth < 20) return;
             this.maxWidth = this.maxHeight = 'none';
             this.width = Math.max(20, (this.width - ev.deltaY))
-            this.height = this.width / this.radio;
+            this.height = this.width * this.radio;
         },
         dragStart(ev) {
             this.drag = true
