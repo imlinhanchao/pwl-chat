@@ -183,6 +183,10 @@
         vertical-align: middle;
     }
 }
+.discusse {
+    text-align: center;
+    font-size: 70%;
+}
 </style>
 <style lang="less">
 .ivu-tabs.ivu-tabs-card>.ivu-tabs-bar .ivu-tabs-tab {
@@ -248,6 +252,9 @@
         <symbol id="delIcon" viewBox="0 0 1029 1024">
             <path d="M5.680999 1.42025h1022.57975v1022.57975C463.001387 1024 5.680999 565.969487 5.680999 1.42025z m592.244105 494.246879L724.327323 622.069348c17.042996 17.042996 44.737864 17.042996 61.78086 0l7.101248-7.101248c17.042996-17.042996 17.042996-44.737864 0-61.78086L666.807212 426.785021l126.402219-126.402219c17.042996-17.042996 17.042996-44.737864 0-61.78086l-7.101248-7.101249c-17.042996-17.042996-44.737864-17.042996-61.78086 0L597.925104 357.902913 471.522885 231.500693c-17.042996-17.042996-44.737864-17.042996-61.78086 0l-7.101248 7.101249c-17.042996 17.042996-17.042996 44.737864 0 61.78086l126.402219 126.402219-126.402219 125.692094c-17.042996 17.042996-17.042996 44.737864 0 61.78086l7.101248 7.101248c17.042996 17.042996 44.737864 17.042996 61.78086 0l126.402219-125.692094z" fill="#bfbfbf" p-id="5348"></path>
         </symbol>
+        <section class="discusse" v-if="discusse">
+            <a href="javascript:void(0)" @click="discussed = '*`# ' + discusse + ' #`*'">#{{discusse}}#</a>
+        </section>
         <section class="chat-form">
             <span class="logout" @click="logout"><Avatar :src="current.userAvatarURL" title="点击注销"/></span>
             <Input ref="message"
@@ -424,7 +431,9 @@
                     recivers: []
                 },
                 sending: false,
-                redpacketForm: false
+                redpacketForm: false,
+                discusse: '',
+                discussed: ''
             }
         },
         watch: {
@@ -685,6 +694,7 @@
                     case "online":  //在线人数
                         document.getElementById('win-title').innerHTML = `摸鱼派 - 聊天室(${msg.onlineChatCnt})`
                         this.onlineList = msg.users;
+                        this.discusse = msg.discussing
                         break;
                 }
             },
