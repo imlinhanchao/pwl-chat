@@ -277,6 +277,7 @@ em.disscuse-msg {
                 type="text"
                 v-model="message"
                 placeholder="简单聊聊"
+                @on-keyup.229="() => {}"
                 @on-keyup.enter="wsPush"
                 @on-keyup.up="selList(-1)"
                 @on-keyup.down="selList(1)"
