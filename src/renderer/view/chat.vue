@@ -240,6 +240,14 @@
     }
 
 }
+em.disscuse-msg {
+    cursor: pointer;
+    padding: 2px 5px;
+    &:hover {
+        background: #57a3f3;
+        border-radius: 5px;
+    }
+}
 </style>
 
 <template>
@@ -253,7 +261,15 @@
             <path d="M5.680999 1.42025h1022.57975v1022.57975C463.001387 1024 5.680999 565.969487 5.680999 1.42025z m592.244105 494.246879L724.327323 622.069348c17.042996 17.042996 44.737864 17.042996 61.78086 0l7.101248-7.101248c17.042996-17.042996 17.042996-44.737864 0-61.78086L666.807212 426.785021l126.402219-126.402219c17.042996-17.042996 17.042996-44.737864 0-61.78086l-7.101248-7.101249c-17.042996-17.042996-44.737864-17.042996-61.78086 0L597.925104 357.902913 471.522885 231.500693c-17.042996-17.042996-44.737864-17.042996-61.78086 0l-7.101248 7.101249c-17.042996 17.042996-17.042996 44.737864 0 61.78086l126.402219 126.402219-126.402219 125.692094c-17.042996 17.042996-17.042996 44.737864 0 61.78086l7.101248 7.101248c17.042996 17.042996 44.737864 17.042996 61.78086 0l126.402219-125.692094z" fill="#bfbfbf" p-id="5348"></path>
         </symbol>
         <section class="discusse" v-if="discusse">
-            <a href="javascript:void(0)" @click="discussed = '*`# ' + discusse + ' #`*'">#{{discusse}}#</a>
+            <a href="javascript:void(0)" @click="discussed = discusse">#{{discusse}}#</a> 
+            <a href="javascript:void(0)" @click="modalDiscusse = true"><Icon custom="fa fa-pencil-square-o" /></a>
+            <Modal
+                v-model="modalDiscusse"
+                title="编辑话题"
+                @on-ok="editDiscusse">
+                <p>修改话题需要16积分，将自动从账户中扣除；最大长度16字符，不合法字符将被自动过滤。</p>
+                <Input v-model="newDiscusse" placeholder="话题" />
+            </Modal>
         </section>
         <section class="chat-form">
             <span class="logout" @click="logout"><Avatar :src="current.userAvatarURL" title="点击注销"/></span>
@@ -329,6 +345,7 @@
                     <div class="msg-quote-tip md-style" v-html="quote.content"></div>
                 </div>
             </Tooltip>
+            <Tag closable @on-close="discussed=null" color="primary" v-if="discussed">#{{discussed}}#</Tag>
             <section class="emoji-tab" v-show="emojiForm">
                 <div class="emoji-close" @click="emojiForm = false"><Icon custom="fa fa-times" /></div>
                 <Tabs value="emoji" type="card">
@@ -407,6 +424,9 @@
             this.init();
             document.removeEventListener('paste', this.onPaste);
             document.addEventListener('paste', this.onPaste);
+            document.body.addEventListener('click', (ev) => {
+                if (ev.target.className == 'disscuse-msg') this.discusseListener(ev);
+            }, false)
         },
         data () {
             return {
@@ -433,7 +453,9 @@
                 sending: false,
                 redpacketForm: false,
                 discusse: '',
-                discussed: ''
+                discussed: '',
+                modalDiscusse: false,
+                newDiscusse: ''
             }
         },
         watch: {
@@ -494,6 +516,9 @@
                 }
                 this.current = rsp.data;
                 return true;
+            },
+            discusseListener(ev) {
+                this.discussed = ev.target.dataset.disscuse
             },
             async onPaste(ev) {
                 let items = ev.clipboardData && ev.clipboardData.items;
@@ -601,6 +626,14 @@
                     this.appendMsg({ regexp: null, data: files.map(f => `![](${f})`).join('') }); 
                 }
             },
+            editDiscusse() {
+                if (!this.newDiscusse) return;
+                if (this.newDiscusse.length > 16) {
+                    this.$Message.error('话题长度太长');
+                    return;
+                }
+                this.wsSend(`[setdiscuss]${this.newDiscusse}[/setdiscuss]`)
+            },
             msgCursor() {
                 return this.$refs['message'].$el.querySelector('input').selectionStart
             },
@@ -680,6 +713,10 @@
                     let at = this.quote.userName != this.current.userName ? `@${this.quote.userName} ` : ''
                     this.message = `回复${at}：\n\n${raw}\n\n${this.message}`;
                     this.quote = null;
+                }
+                if (this.discussed) {
+                    this.message += `\r\n*\`# ${this.discussed} #\`*`
+                    this.discussed = null;
                 }
                 await this.wsSend(this.message, false);
                 this.message = '';

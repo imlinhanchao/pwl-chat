@@ -772,7 +772,8 @@
             formatContent(content) {
                 return content.replace(/(<a )/g, '$1target="_blank" ')
                     .replace(/(<iframe[^>]*?src="(https:)*\/\/music.163.com\/outchain\/player\?type=\d&amp;id=(\d+)[^"]*?">\s*<\/iframe>)/, '<div class="netease-music"><div class="netease-cover" data-id="$3"></div>$1</div>')
-                    .replace(/(<img )/g, '$1data-action="preview" ');
+                    .replace(/(<img )/g, '$1data-action="preview" ')
+                    .replace(/<em><code># (.*?) #<\/code><\/em>/, '<em class="disscuse-msg" title="跟随话题"><code class="disscuse-msg" data-disscuse="$1"># $1 #<\/code><\/em>')
             },
             async init() {
                 await this.load(1);
