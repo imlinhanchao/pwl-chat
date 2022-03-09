@@ -240,7 +240,7 @@
     }
 
 }
-em.disscuse-msg {
+em.discuss-msg {
     cursor: pointer;
     padding: 2px 5px;
     &:hover {
@@ -426,7 +426,7 @@ em.disscuse-msg {
             document.removeEventListener('paste', this.onPaste);
             document.addEventListener('paste', this.onPaste);
             document.body.addEventListener('click', (ev) => {
-                if (ev.target.className == 'disscuse-msg') this.discusseListener(ev);
+                if (ev.target.className == 'discuss-msg') this.discusseListener(ev);
             }, false)
         },
         data () {
@@ -519,7 +519,7 @@ em.disscuse-msg {
                 return true;
             },
             discusseListener(ev) {
-                this.discussed = ev.target.dataset.disscuse
+                this.discussed = ev.target.dataset.discuss
             },
             async onPaste(ev) {
                 let items = ev.clipboardData && ev.clipboardData.items;
@@ -733,6 +733,9 @@ em.disscuse-msg {
                         document.getElementById('win-title').innerHTML = `摸鱼派 - 聊天室(${msg.onlineChatCnt})`
                         this.onlineList = msg.users;
                         this.discusse = msg.discussing
+                        break;
+                    case "discussChanged":
+                        this.discuss = msg.newDiscuss;
                         break;
                 }
             },
