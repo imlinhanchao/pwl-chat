@@ -62,7 +62,7 @@
                     :type="passwdType"
                     v-model="login.passwd"
                     placeholder="密码"
-                    @on-keyup.enter="submit('loginForm')"
+                    @on-keyup.enter="$refs['mfacode'].focus()"
                 >
                     <Icon custom="fa fa-lock" slot="prepend"></Icon>
                     <Button
@@ -71,6 +71,16 @@
                         @click="isPasswdShow=!isPasswdShow"
                         style="box-shadow:none;"
                     ></Button>
+                </Input>
+            </FormItem>
+            <FormItem prop="mfacode">
+                <Input ref="mfacode"
+                    type="text"
+                    v-model="login.mfacode"
+                    placeholder="两步验证码"
+                    @on-keyup.enter="submit('loginForm')"
+                >
+                    <Icon custom="fa fa-shield" slot="prepend"></Icon>
                 </Input>
             </FormItem>
             <div class="login-footer">
@@ -114,6 +124,7 @@
                 login: {
                     username: localStorage.getItem('username') || '',
                     passwd: localStorage.getItem('passwd') || '',
+                    mfacode: '',
                 },
                 isPasswdShow: false,
                 ruleValidate: {
@@ -121,7 +132,6 @@
                     passwd: [{ validator: validatePasswd, trigger: 'blur' }],
                 },
                 login_loading: false,
-
             }
         },
         watch: {

@@ -732,10 +732,10 @@ em.discuss-msg {
                     case "online":  //在线人数
                         document.getElementById('win-title').innerHTML = `摸鱼派 - 聊天室(${msg.onlineChatCnt})`
                         this.onlineList = msg.users;
-                        this.discusse = msg.discussing
+                        this.discusse = msg.discussing;
                         break;
                     case "discussChanged":
-                        this.discuss = msg.newDiscuss;
+                        this.discusse = msg.newDiscuss;
                         break;
                 }
             },
@@ -744,10 +744,16 @@ em.discuss-msg {
                 if (!rsp) return;
                 if (rsp.code == 401 && !retry && await this.$root.relogin()) {
                     await this.init();
-                    if(await this.wsSend(message, true))
+                    if(await this.wsSend(message, true)) {
                         this.$Message.warning('服务器失联，已重新登录.');
-                    return true;
+                        return true;
+                    }
                 }
+                else if(rsp.code == 401 && !retry) {
+                    localStorage.removeItem('token');
+                    this.$router.push('/');
+                }
+
                 if (rsp.code != 0) {
                     this.$Message.error(rsp.msg);
                     return false;
