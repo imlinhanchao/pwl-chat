@@ -21,7 +21,8 @@ class PWL {
                 method: 'post',
                 data: {
                     nameOrEmail: data.username,
-                    userPassword: md5.update(data.passwd).digest('hex')
+                    userPassword: md5.update(data.passwd).digest('hex'),
+                    mfaCode: data.mfacode
                 },
             });
 
